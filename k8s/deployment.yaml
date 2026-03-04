@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: axric-fe
+  namespace: axric
 spec:
   replicas: 2
   selector:
@@ -14,6 +15,31 @@ spec:
     spec:
       containers:
         - name: axric-fe
-          image: jaron197/axric-fe:v1.0.1
+          image: jaron197/axric-fe:v1.0.3
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
+
+
+
+Cluster axric 
+-Node Geust 192.xxx.xxx.1 (Chonburi)
+ namespace
+ - argo
+ - axric
+  - pods
+   - axric-fe-xxxx-xxxx (replica3)
+   - axric-fe-xxxx-xxxx (replica3)
+   - axric-fe-xxxx-xxxx (replica3)
+ - kube-system
+
+ -Node Geust 192.xxx.xxx.2 (Bangkok)
+ namespace
+ - argo
+ - axric
+  - pods
+   - axric-fe-xxxx-xxxx (replica3)
+   - axric-fe-xxxx-xxxx (replica3)
+   - axric-fe-xxxx-xxxx (replica3)
+ - kube-system
+
