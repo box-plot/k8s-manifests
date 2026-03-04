@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: axric-fe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: axric-fe
+  template:
+    metadata:
+      labels:
+        app: axric-fe
+    spec:
+      containers:
+        - name: axric-fe
+          image: yourdockerhub/axric-fe:v1.0.1
+          ports:
+            - containerPort: 80
