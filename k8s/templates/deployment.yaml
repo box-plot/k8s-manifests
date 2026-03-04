@@ -22,24 +22,24 @@ spec:
 
 
 
-Cluster axric 
--Node Geust 192.xxx.xxx.1 (Chonburi)
- namespace
- - argo
- - axric
-  - pods
-   - axric-fe-xxxx-xxxx (replica3)
-   - axric-fe-xxxx-xxxx (replica3)
-   - axric-fe-xxxx-xxxx (replica3)
- - kube-system
+# Cluster axric 
+# -Node Geust 192.xxx.xxx.1 (Chonburi)
+#  namespace
+#  - argo
+#  - axric
+#   - pods
+#    - axric-fe-xxxx-xxxx (replica3)
+#    - axric-fe-xxxx-xxxx (replica3)
+#    - axric-fe-xxxx-xxxx (replica3)
+#  - kube-system
 
- -Node Geust 192.xxx.xxx.2 (Bangkok)
- namespace
- - argo
- - axric
-  - pods
-   - axric-fe-xxxx-xxxx (replica3)
-   - axric-fe-xxxx-xxxx (replica3)
-   - axric-fe-xxxx-xxxx (replica3)
- - kube-system
+#  -Node Geust 192.xxx.xxx.2 (Bangkok)
+#  namespace
+#  - argo
+#  - axric
+#   - pods
+#    - axric-fe-xxxx-xxxx (replica3)
+#    - axric-fe-xxxx-xxxx (replica3)
+#    - axric-fe-xxxx-xxxx (replica3)
+#  - kube-system
 
