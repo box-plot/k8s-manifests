@@ -2,11 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: axric-fe
-  namespace: axric
+  namespace: axric 
 spec:
-  type: NodePort
+  type: NodePort #service type
   selector:
-    app: axric-fe
+    app: axric-fe #label selector for service
   ports:
     - port: 80
       targetPort: 80

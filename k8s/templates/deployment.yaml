@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: axric-fe
-  namespace: axric
+  name: axric-fe #name of deployment
+  namespace: axric #namespace of deployment
 spec:
-  replicas: 2
+  replicas: 2 #number of replicas (load balancing)
   selector:
     matchLabels:
-      app: axric-fe
+      app: axric-fe #label selector for deployment
   template:
     metadata:
       labels:
-        app: axric-fe
+        app: axric-fe #labels for pods
     spec:
       containers:
-        - name: axric-fe
-          image: jaron197/axric-fe:v1.0.3
+        - name: axric-fe #name of container
+          image: jaron197/axric-fe:v1.0.3 #image of container
           imagePullPolicy: Always
           ports:
             - containerPort: 80
