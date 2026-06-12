@@ -141,7 +141,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/rbac" ] && [ "$(find k8s/charts/templates/rbac -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying RBAC resources..."
-            kubectl apply -f k8s/charts/templates/rbac/ -n axric
+            kubectl apply -R -f k8s/charts/templates/rbac/ -n axric
           else
             echo "No RBAC resources found, skipping..."
           fi
@@ -151,7 +151,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/configmaps" ] && [ "$(find k8s/charts/templates/configmaps -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying ConfigMaps..."
-            kubectl apply -f k8s/charts/templates/configmaps/ -n axric
+            kubectl apply -R -f k8s/charts/templates/configmaps/ -n axric
           else
             echo "No ConfigMaps found, skipping..."
           fi
@@ -161,7 +161,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/pvcs" ] && [ "$(find k8s/charts/templates/pvcs -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying PersistentVolumeClaims..."
-            kubectl apply -f k8s/charts/templates/pvcs/ -n axric
+            kubectl apply -R -f k8s/charts/templates/pvcs/ -n axric
           else
             echo "No PVCs found, skipping..."
           fi
@@ -171,7 +171,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/services" ] && [ "$(find k8s/charts/templates/services -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Services..."
-            kubectl apply -f k8s/charts/templates/services/ -n axric
+            kubectl apply -R -f k8s/charts/templates/services/ -n axric
           else
             echo "No Services found, skipping..."
           fi
@@ -181,7 +181,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/ingresses" ] && [ "$(find k8s/charts/templates/ingresses -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Ingresses..."
-            kubectl apply -f k8s/charts/templates/ingresses/ -n axric
+            kubectl apply -R -f k8s/charts/templates/ingresses/ -n axric
           else
             echo "No Ingresses found, skipping..."
           fi
@@ -191,7 +191,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/statefulsets" ] && [ "$(find k8s/charts/templates/statefulsets -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying StatefulSets..."
-            kubectl apply -f k8s/charts/templates/statefulsets/ -n axric
+            kubectl apply -R -f k8s/charts/templates/statefulsets/ -n axric
           else
             echo "No StatefulSets found, skipping..."
           fi
@@ -201,7 +201,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/daemonsets" ] && [ "$(find k8s/charts/templates/daemonsets -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying DaemonSets..."
-            kubectl apply -f k8s/charts/templates/daemonsets/ -n axric
+            kubectl apply -R -f k8s/charts/templates/daemonsets/ -n axric
           else
             echo "No DaemonSets found, skipping..."
           fi
@@ -211,7 +211,7 @@ jobs:
         run: |
           if [ -d "k8s/charts/templates/deployments" ] && [ "$(find k8s/charts/templates/deployments -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Deployments..."
-            kubectl apply -f k8s/charts/templates/deployments/ -n axric
+            kubectl apply -R -f k8s/charts/templates/deployments/ -n axric
           else
             echo "No Deployments found, skipping..."
           fi
