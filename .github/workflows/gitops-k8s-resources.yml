@@ -1,12 +1,12 @@
 name: GitOps K8s Resources to Helm
 
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
   repository_dispatch:
     types: [deployment-app]
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+  # schedule:
+  #   # Run daily at 2 AM UTC
+  #   - cron: '0 2 * * *'
 
 permissions:
   contents: write
@@ -56,6 +56,43 @@ jobs:
           sudo wget -q -O /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
           sudo chmod +x /usr/local/bin/yq
           yq --version
+
+      - name: Extract version from dispatch
+        id: version
+        run: |
+          VERSION="${{ github.event.client_payload.version }}"
+          if [ -z "$VERSION" ]; then
+            echo "::error::Version not provided in repository_dispatch payload"
+            exit 1
+          fi
+          echo "NEW_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "::notice::Deploying version: $VERSION"
+
+      - name: Deploy to Kubernetes
+        run: |
+          set -euo pipefail
+          kubectl get ns axric >/dev/null 2>&1 || kubectl create ns axric
+
+          FRONT_DEPLOY=$(kubectl -n axric get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -E '^(axric-frontend|axric-fe)$' | head -n 1 || true)
+          if [ -z "$FRONT_DEPLOY" ]; then
+            echo "::error::Frontend deployment not found in namespace axric (expected axric-frontend or axric-fe)."
+            kubectl -n axric get deploy
+            exit 1
+          fi
+
+          BACK_DEPLOY=$(kubectl -n axric get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -E '^(axric-backend|axric-api)$' | head -n 1 || true)
+          if [ -z "$BACK_DEPLOY" ]; then
+            echo "::error::Backend deployment not found in namespace axric (expected axric-backend or axric-api)."
+            kubectl -n axric get deploy
+            exit 1
+          fi
+
+          kubectl -n axric set image deployment/$FRONT_DEPLOY \
+            $FRONT_DEPLOY=${{ secrets.DOCKERHUB_USERNAME }}/axric-fe:${{ steps.version.outputs.NEW_VERSION }}
+
+          kubectl -n axric set image deployment/$BACK_DEPLOY \
+            $BACK_DEPLOY=${{ secrets.DOCKERHUB_USERNAME }}/axric-api:${{ steps.version.outputs.NEW_VERSION }}
+
       - name: Export resources (Argo CD friendly)
         run: |
           set -euo pipefail
