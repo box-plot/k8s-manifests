@@ -55,10 +55,11 @@ jobs:
           # Create namespace if it doesn't exist
           kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$NAMESPACE"
           
-          # Deploy using Helm
+          # Deploy using Helm (--force allows takeover of existing resources)
           helm upgrade --install k8s-export k8s/charts \
             --namespace "$NAMESPACE" \
             --values k8s/charts/values.yaml \
+            --force \
             --wait \
             --timeout 5m
           
