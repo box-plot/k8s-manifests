@@ -199,6 +199,11 @@ jobs:
             
             cat > "$VALUES_FILE" << 'EOFV'
           namespace: axric
+          export:
+            namespaces: "axric"
+            exportSecrets: false
+            exportClusterRbac: false
+            exportCustomResources: false
           apps: {}
           EOFV
             
@@ -211,9 +216,6 @@ jobs:
               kubectl get deploy -n "$ns" -o json | jq -r '.items[] | "\(.metadata.name)|\(.spec.replicas)|\(.spec.template.spec.containers[0].image)|\(.spec.template.spec.containers[0].ports[0].containerPort // 8080)|\(.spec.template.spec.containers[0].imagePullPolicy // "IfNotPresent")"' | while IFS='|' read -r deploy_name replicas image port pull_policy; do
                 app_key=$(to_camel_case "$deploy_name")
                 
-                # Extract image tag
-                image_tag="${image##*/}"
-                
                 # Get strategy
                 strategy=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.strategy.type}' || echo "RollingUpdate")
                 
@@ -225,19 +227,17 @@ jobs:
                 
                 echo "Adding app: $app_key from $deploy_name"
                 
-                # Add app to values.yaml
-                yq eval ".apps.$app_key = {
-                  name: \"$deploy_name\",
-                  image: \"$image\",
-                  replicaCount: $((replicas > 0 ? replicas : 1)),
-                  port: $port,
-                  pullPolicy: \"$pull_policy\",
-                  strategy: \"$strategy\",
-                  resources: {
-                    requests: {cpu: \"$requests_cpu\", memory: \"$requests_mem\"},
-                    limits: {cpu: \"$limits_cpu\", memory: \"$limits_mem\"}
-                  }
-                }" -i "$VALUES_FILE"
+                # Set individual fields to avoid YAML parsing issues
+                yq eval ".apps.$app_key.name = \"$deploy_name\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.image = \"$image\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.replicaCount = $((replicas > 0 ? replicas : 1))" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.port = $port" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.pullPolicy = \"$pull_policy\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.strategy = \"$strategy\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.resources.requests.cpu = \"$requests_cpu\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.resources.requests.memory = \"$requests_mem\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.resources.limits.cpu = \"$limits_cpu\"" -i "$VALUES_FILE"
+                yq eval ".apps.$app_key.resources.limits.memory = \"$limits_mem\"" -i "$VALUES_FILE"
               done
             done
           else
