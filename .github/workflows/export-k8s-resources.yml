@@ -8,16 +8,17 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   export-k8s-resources:
     runs-on: ubuntu-latest
     env:
       # Namespaces to export (space-separated)
-      # Primary app namespace: axric
-      # System namespaces: kube-system, ingress-nginx, argocd, database
-      EXPORT_NAMESPACES: "axric kube-system ingress-nginx argocd database"
+      EXPORT_NAMESPACES: "axric"
+      # GitOps-safe defaults for Argo CD
+      EXPORT_SECRETS: "false"
+      EXPORT_CLUSTER_RBAC: "false"
+      EXPORT_CUSTOM_RESOURCES: "false"
     
     steps:
       - name: Checkout repository
@@ -46,104 +47,141 @@ jobs:
           kubectl cluster-info
           kubectl get nodes
       
-      - name: Create Helm charts templates directories
+      - name: Install yq for manifest cleanup
         run: |
+          set -euo pipefail
+          YQ_VERSION="v4.44.3"
+          sudo wget -q -O /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Export resources (Argo CD friendly)
+        run: |
+          set -euo pipefail
+
           mkdir -p k8s/charts/templates/{deployments,configmaps,secrets,services,ingresses,statefulsets,daemonsets,pvcs,rbac,custom-resources}
-      
-      - name: Display export configuration
-        run: |
+
+          sanitize_manifest() {
+            local file="$1"
+            if [ ! -s "$file" ]; then
+              rm -f "$file"
+              return
+            fi
+
+            yq eval '
+              del(
+                .metadata.creationTimestamp,
+                .metadata.resourceVersion,
+                .metadata.uid,
+                .metadata.generation,
+                .metadata.managedFields,
+                .metadata.annotations."kubectl.kubernetes.io/last-applied-configuration",
+                .metadata.annotations."deployment.kubernetes.io/revision",
+                .status
+              )
+              | if .kind == "Service" then
+                  del(
+                    .spec.clusterIP,
+                    .spec.clusterIPs,
+                    .spec.healthCheckNodePort,
+                    .spec.ipFamilies,
+                    .spec.ipFamilyPolicy,
+                    .spec.internalTrafficPolicy,
+                    .spec.allocateLoadBalancerNodePorts,
+                    .spec.sessionAffinityConfig
+                  )
+                elif .kind == "PersistentVolumeClaim" then
+                  del(.spec.volumeName)
+                else
+                  .
+                end
+            ' -i "$file"
+          }
+
+          export_resource() {
+            local resource="$1"
+            local target_dir="$2"
+            local target_file="$3"
+
+            for ns in $EXPORT_NAMESPACES; do
+              if ! kubectl get namespace "$ns" >/dev/null 2>&1; then
+                echo "Skipping missing namespace: $ns"
+                continue
+              fi
+
+              mkdir -p "k8s/charts/templates/${target_dir}/${ns}"
+              local output="k8s/charts/templates/${target_dir}/${ns}/${target_file}"
+              local tmp_json
+              tmp_json=$(mktemp)
+
+              if ! kubectl get "$resource" -n "$ns" -o json > "$tmp_json" 2>/dev/null; then
+                rm -f "$tmp_json" "$output"
+                continue
+              fi
+
+              if [ "$(jq '.items | length' "$tmp_json")" -eq 0 ]; then
+                rm -f "$tmp_json" "$output"
+                continue
+              fi
+
+              jq -c '.items[]' "$tmp_json" | while read -r item; do
+                echo "$item" | yq -P e '.' -
+                echo "---"
+              done > "$output"
+
+              rm -f "$tmp_json"
+              sanitize_manifest "$output"
+            done
+          }
+
           echo "====================================="
           echo "K8s Export Configuration"
           echo "====================================="
-          echo "Exporting from namespaces:"
-          for ns in $EXPORT_NAMESPACES; do
-            echo "  - $ns"
-          done
+          echo "Namespaces: $EXPORT_NAMESPACES"
+          echo "Export secrets: $EXPORT_SECRETS"
+          echo "Export cluster RBAC: $EXPORT_CLUSTER_RBAC"
+          echo "Export custom resources: $EXPORT_CUSTOM_RESOURCES"
           echo "====================================="
-      
-      - name: Export Deployments
-        run: |
-          kubectl get deployments -A -o yaml > k8s/charts/templates/deployments/all-deployments.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/deployments/$ns
-            kubectl get deployments -n $ns -o yaml > k8s/charts/templates/deployments/$ns/deployments.yaml 2>/dev/null || true
-          done
-      
-      - name: Export StatefulSets
-        run: |
-          kubectl get statefulsets -A -o yaml > k8s/charts/templates/statefulsets/all-statefulsets.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/statefulsets/$ns
-            kubectl get statefulsets -n $ns -o yaml > k8s/charts/templates/statefulsets/$ns/statefulsets.yaml 2>/dev/null || true
-          done
-      
-      - name: Export DaemonSets
-        run: |
-          kubectl get daemonsets -A -o yaml > k8s/charts/templates/daemonsets/all-daemonsets.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/daemonsets/$ns
-            kubectl get daemonsets -n $ns -o yaml > k8s/charts/templates/daemonsets/$ns/daemonsets.yaml 2>/dev/null || true
-          done
-      
-      - name: Export ConfigMaps
-        run: |
-          kubectl get configmaps -A -o yaml > k8s/charts/templates/configmaps/all-configmaps.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/configmaps/$ns
-            kubectl get configmaps -n $ns -o yaml > k8s/charts/templates/configmaps/$ns/configmaps.yaml 2>/dev/null || true
-          done
-      
-      - name: Export Secrets
-        run: |
-          kubectl get secrets -A -o yaml > k8s/charts/templates/secrets/all-secrets.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/secrets/$ns
-            kubectl get secrets -n $ns -o yaml > k8s/charts/templates/secrets/$ns/secrets.yaml 2>/dev/null || true
-          done
-      
-      - name: Export Services
-        run: |
-          kubectl get services -A -o yaml > k8s/charts/templates/services/all-services.yaml
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/services/$ns
-            kubectl get services -n $ns -o yaml > k8s/charts/templates/services/$ns/services.yaml 2>/dev/null || true
-          done
-      
-      - name: Export Ingresses
-        run: |
-          kubectl get ingresses -A -o yaml > k8s/charts/templates/ingresses/all-ingresses.yaml 2>/dev/null || true
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/ingresses/$ns
-            kubectl get ingresses -n $ns -o yaml > k8s/charts/templates/ingresses/$ns/ingresses.yaml 2>/dev/null || true
-          done
-      
-      - name: Export PersistentVolumeClaims
-        run: |
-          kubectl get pvc -A -o yaml > k8s/charts/templates/pvcs/all-pvcs.yaml 2>/dev/null || true
-          for ns in $EXPORT_NAMESPACES; do
-            mkdir -p k8s/charts/templates/pvcs/$ns
-            kubectl get pvc -n $ns -o yaml > k8s/charts/templates/pvcs/$ns/pvcs.yaml 2>/dev/null || true
-          done
-      
-      - name: Export RBAC Resources
-        run: |
-          mkdir -p k8s/charts/templates/rbac
-          kubectl get clusterroles -o yaml > k8s/charts/templates/rbac/clusterroles.yaml 2>/dev/null || true
-          kubectl get clusterrolebindings -o yaml > k8s/charts/templates/rbac/clusterrolebindings.yaml 2>/dev/null || true
-          kubectl get roles -A -o yaml > k8s/charts/templates/rbac/roles.yaml 2>/dev/null || true
-          kubectl get rolebindings -A -o yaml > k8s/charts/templates/rbac/rolebindings.yaml 2>/dev/null || true
-          kubectl get serviceaccounts -A -o yaml > k8s/charts/templates/rbac/serviceaccounts.yaml 2>/dev/null || true
-      
-      - name: Export Custom Resources
-        run: |
-          mkdir -p k8s/charts/templates/custom-resources
-          # Export common CRDs
-          for crd in $(kubectl get crd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-            if kubectl get $crd -A -o yaml 2>/dev/null | grep -q kind; then
-              mkdir -p k8s/charts/templates/custom-resources/$crd
-              kubectl get $crd -A -o yaml > k8s/charts/templates/custom-resources/$crd/$crd.yaml 2>/dev/null || true
-            fi
-          done
+
+          export_resource deployments deployments deployments.yaml
+          export_resource statefulsets statefulsets statefulsets.yaml
+          export_resource daemonsets daemonsets daemonsets.yaml
+          export_resource configmaps configmaps configmaps.yaml
+          export_resource services services services.yaml
+          export_resource ingresses ingresses ingresses.yaml
+          export_resource pvc pvcs pvcs.yaml
+          export_resource roles rbac roles.yaml
+          export_resource rolebindings rbac rolebindings.yaml
+          export_resource serviceaccounts rbac serviceaccounts.yaml
+
+          if [ "$EXPORT_SECRETS" = "true" ]; then
+            export_resource secrets secrets secrets.yaml
+          else
+            rm -rf k8s/charts/templates/secrets/*
+            echo "Secret export skipped (EXPORT_SECRETS=false)"
+          fi
+
+          if [ "$EXPORT_CLUSTER_RBAC" = "true" ]; then
+            kubectl get clusterroles -o yaml > k8s/charts/templates/rbac/clusterroles.yaml 2>/dev/null || true
+            kubectl get clusterrolebindings -o yaml > k8s/charts/templates/rbac/clusterrolebindings.yaml 2>/dev/null || true
+            sanitize_manifest k8s/charts/templates/rbac/clusterroles.yaml
+            sanitize_manifest k8s/charts/templates/rbac/clusterrolebindings.yaml
+          else
+            rm -f k8s/charts/templates/rbac/clusterroles.yaml k8s/charts/templates/rbac/clusterrolebindings.yaml
+            echo "Cluster RBAC export skipped (EXPORT_CLUSTER_RBAC=false)"
+          fi
+
+          if [ "$EXPORT_CUSTOM_RESOURCES" = "true" ]; then
+            for crd in $(kubectl get crd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+              mkdir -p "k8s/charts/templates/custom-resources/$crd"
+              if kubectl get "$crd" -A -o yaml > "k8s/charts/templates/custom-resources/$crd/$crd.yaml" 2>/dev/null; then
+                sanitize_manifest "k8s/charts/templates/custom-resources/$crd/$crd.yaml"
+              fi
+            done
+          else
+            rm -rf k8s/charts/templates/custom-resources/*
+            echo "Custom resource export skipped (EXPORT_CUSTOM_RESOURCES=false)"
+          fi
       
       - name: Create Helm Chart Structure
         run: |
@@ -160,7 +198,7 @@ jobs:
             - manifests
           maintainers:
             - name: DevOps Team
-              email: devops@example.com
+              email: jaronthongfoo@gmail.com
           EOF
       
       - name: Create Helm values.yaml
@@ -182,11 +220,17 @@ jobs:
             configmaps:
               enabled: true
             secrets:
-              enabled: true
+              enabled: false
             services:
               enabled: true
             ingresses:
               enabled: true
+
+          export:
+            namespaces: "axric"
+            exportSecrets: false
+            exportClusterRbac: false
+            exportCustomResources: false
           
           # Update strategy
           updateStrategy:
@@ -330,9 +374,10 @@ jobs:
           
           ## Notes
           
-          - Sensitive data in Secrets is base64 encoded
-          - Some cluster-specific information may need adjustment
-          - Custom resources are exported if CRDs exist in the cluster
+          - This workflow removes runtime metadata for GitOps-friendly diffs
+          - Secrets are NOT exported by default (`EXPORT_SECRETS=false`)
+          - Cluster RBAC and custom resources are disabled by default
+          - Set workflow env vars to enable additional resource exports
           
           EOF
       
@@ -382,29 +427,3 @@ jobs:
           git add k8s/
           git commit -m "chore: Export Kubernetes resources - $(date +'%Y-%m-%d %H:%M:%S')"
           git push
-      
-      - name: Create release (optional)
-        if: success()
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: k8s-export-${{ github.run_number }}
-          release_name: K8s Export Release ${{ github.run_number }}
-          body: |
-            Kubernetes resources exported on ${{ github.event.head_commit.timestamp }}
-            
-            This release contains exported Kubernetes manifests packaged as a Helm chart.
-            
-            ## Contents
-            - Deployments
-            - StatefulSets
-            - DaemonSets
-            - ConfigMaps
-            - Secrets
-            - Services
-            - Ingresses
-            - RBAC resources
-            - Custom resources
-          draft: false
-          prerelease: false
