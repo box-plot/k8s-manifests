@@ -12,9 +12,16 @@ permissions:
   contents: write
 
 jobs:
-  # Job 1: Deploy updated images to Kubernetes
-  deploy-to-kubernetes:
+  export-k8s-resources:
     runs-on: ubuntu-latest
+    env:
+      # Namespaces to export (space-separated)
+      EXPORT_NAMESPACES: "axric"
+      # GitOps-safe defaults for Argo CD
+      EXPORT_SECRETS: "false"
+      EXPORT_CLUSTER_RBAC: "false"
+      EXPORT_CUSTOM_RESOURCES: "false"
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,14 +33,29 @@ jobs:
         with:
           version: 'latest'
       
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
       - name: Configure kubectl
         run: |
+          # Create kubeconfig from secrets
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
+          
+          # Verify connection
           kubectl cluster-info
           kubectl get nodes
       
+      - name: Install yq for manifest cleanup
+        run: |
+          set -euo pipefail
+          YQ_VERSION="v4.44.3"
+          sudo wget -q -O /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
       - name: Extract version from dispatch
         id: version
         run: |
@@ -44,7 +66,6 @@ jobs:
           fi
           echo "NEW_VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "::notice::Deploying version: $VERSION"
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -55,61 +76,22 @@ jobs:
         run: |
           set -euo pipefail
           kubectl get ns axric >/dev/null 2>&1 || kubectl create ns axric
-
           FRONT_DEPLOY=$(kubectl -n axric get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -E '^(axric-frontend|axric-fe)$' | head -n 1 || true)
           if [ -z "$FRONT_DEPLOY" ]; then
             echo "::error::Frontend deployment not found in namespace axric (expected axric-frontend or axric-fe)."
             kubectl -n axric get deploy
             exit 1
           fi
-
           BACK_DEPLOY=$(kubectl -n axric get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -E '^(axric-backend|axric-api)$' | head -n 1 || true)
           if [ -z "$BACK_DEPLOY" ]; then
             echo "::error::Backend deployment not found in namespace axric (expected axric-backend or axric-api)."
             kubectl -n axric get deploy
             exit 1
           fi
-
           kubectl -n axric set image deployment/$FRONT_DEPLOY \
             $FRONT_DEPLOY=${{ secrets.DOCKERHUB_USERNAME }}/axric-fe:${{ steps.version.outputs.NEW_VERSION }}
-
           kubectl -n axric set image deployment/$BACK_DEPLOY \
             $BACK_DEPLOY=${{ secrets.DOCKERHUB_USERNAME }}/axric-api:${{ steps.version.outputs.NEW_VERSION }}
-
-  # Job 2: Export Kubernetes resources
-  sync-resources:
-    runs-on: ubuntu-latest
-    needs: deploy-to-kubernetes
-    env:
-      EXPORT_NAMESPACES: "axric"
-      EXPORT_SECRETS: "false"
-      EXPORT_CLUSTER_RBAC: "false"
-      EXPORT_CUSTOM_RESOURCES: "false"
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-      
-      - name: Configure kubectl
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-      
-      - name: Install yq
-        run: |
-          set -euo pipefail
-          YQ_VERSION="v4.44.3"
-          sudo wget -q -O /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
-          sudo chmod +x /usr/local/bin/yq
-          yq --version
-
       - name: Export resources (Argo CD friendly)
         run: |
           set -euo pipefail
@@ -215,31 +197,6 @@ jobs:
             rm -rf k8s/charts/templates/custom-resources/*
             echo "Custom resource export skipped (EXPORT_CUSTOM_RESOURCES=false)"
           fi
-
-      - name: Upload synced resources artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: synced-k8s
-          path: k8s/
-          if-no-files-found: error
-
-  # Job 3: Generate Helm Chart
-  generate-helm-chart:
-    runs-on: ubuntu-latest
-    needs: sync-resources
-    env:
-      EXPORT_NAMESPACES: "axric"
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download synced resources artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: synced-k8s
-          path: .
       
       - name: Create Helm Chart Structure
         run: |
@@ -569,29 +526,6 @@ jobs:
           
           echo "### Ingresses" >> k8s/INVENTORY.md
           find k8s/charts/templates/ingresses -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
-
-      - name: Upload generated resources artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-k8s
-          path: k8s/
-          if-no-files-found: error
-
-  # Job 4: Commit and Push Changes
-  commit-and-push:
-    runs-on: ubuntu-latest
-    needs: generate-helm-chart
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download generated resources artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: generated-k8s
-          path: .
       
       - name: Commit and push changes
         run: |
