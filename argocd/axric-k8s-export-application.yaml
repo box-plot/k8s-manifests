@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: axric-k8s-export
+spec:
+  destination:
+    namespace: axric
+    server: https://kubernetes.default.svc
+  source:
+    path: k8s/charts
+    repoURL: https://github.com/axric-org/k8s-manifests.git
+    targetRevision: HEAD
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
