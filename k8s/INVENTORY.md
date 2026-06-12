@@ -5,7 +5,7 @@ Generated: $(date)
 ## Export Statistics
 
 ### Deployments
-114 k8s/charts/templates/deployments/axric/deployments.yaml
+ 175 total
 ### StatefulSets
 ### DaemonSets
 ### ConfigMaps
