@@ -21,7 +21,7 @@ apps:
         memory: ""
   axricFe:
     name: axric-fe
-    image: jaron197/axric-fe:1.0.32
+    image: jaron197/axric-fe:1.0.12
     replicaCount: 3
     port: 8080
     pullPolicy: IfNotPresent
