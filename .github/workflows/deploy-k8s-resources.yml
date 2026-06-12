@@ -185,6 +185,7 @@ jobs:
           helm upgrade --install axric-release ./k8s/charts \
             --namespace axric \
             --values k8s/charts/values.yaml \
+            --force \
             --wait \
             --timeout 5m
       
