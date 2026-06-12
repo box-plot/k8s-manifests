@@ -182,6 +182,18 @@ jobs:
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_deployments || 'true') == 'true' }}
         run: |
           echo "Installing/Upgrading Helm Chart..."
+
+          # Adopt all existing resources in the namespace so Helm can manage them
+          for resource in serviceaccounts configmaps services deployments statefulsets daemonsets ingresses persistentvolumeclaims; do
+            kubectl get $resource -n axric -o name 2>/dev/null | while read name; do
+              kubectl label $name -n axric app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+              kubectl annotate $name -n axric \
+                meta.helm.sh/release-name=axric-release \
+                meta.helm.sh/release-namespace=axric \
+                --overwrite 2>/dev/null || true
+            done
+          done
+
           helm upgrade --install axric-release ./k8s/charts \
             --namespace axric \
             --values k8s/charts/values.yaml \
