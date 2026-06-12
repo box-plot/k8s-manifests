@@ -1,0 +1,42 @@
+# Helm Chart Values for K8s Resources Export
+# Generated from cluster export
+
+replicaCount: 1
+
+# Resources to enable/disable
+resources:
+  deployments:
+    enabled: true
+  statefulsets:
+    enabled: true
+  daemonsets:
+    enabled: true
+  configmaps:
+    enabled: true
+  secrets:
+    enabled: false
+  services:
+    enabled: true
+  ingresses:
+    enabled: true
+export:
+  namespaces: "axric"
+  exportSecrets: false
+  exportClusterRbac: false
+  exportCustomResources: false
+
+# Update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Image pull secrets
+imagePullSecrets: []
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""

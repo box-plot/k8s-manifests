@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: axric-release
+    meta.helm.sh/release-namespace: axric
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: axric-api
+  namespace: axric
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: axric-api
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: axric-release
+    meta.helm.sh/release-namespace: axric
+  labels:
+    app: axric-fe
+    app.kubernetes.io/managed-by: Helm
+  name: axric-fe
+  namespace: axric
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: axric-fe
+  sessionAffinity: None
+  type: ClusterIP
+---
+
