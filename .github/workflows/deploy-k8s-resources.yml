@@ -1,0 +1,246 @@
+name: Deploy K8s Resources
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_rbac:
+        description: 'Deploy RBAC resources'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_configmaps:
+        description: 'Deploy ConfigMaps'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_pvcs:
+        description: 'Deploy PersistentVolumeClaims'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_services:
+        description: 'Deploy Services'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_ingresses:
+        description: 'Deploy Ingresses'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_statefulsets:
+        description: 'Deploy StatefulSets'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_daemonsets:
+        description: 'Deploy DaemonSets'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_deployments:
+        description: 'Deploy Deployments (includes image updates)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_all:
+        description: 'Deploy ALL resources (overrides individual selections)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'k8s/charts/templates/**'
+      - '.github/workflows/deploy-k8s-resources.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-k8s-resources:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          
+          # Verify connection
+          kubectl cluster-info
+          kubectl get nodes
+      
+      - name: Verify namespace exists
+        run: |
+          if ! kubectl get namespace axric >/dev/null 2>&1; then
+            echo "Creating namespace: axric"
+            kubectl create namespace axric
+          else
+            echo "Namespace axric already exists"
+          fi
+      
+      - name: Show deployment plan
+        run: |
+          echo "=========================================="
+          echo "Deployment Configuration:"
+          echo "=========================================="
+          echo "Deploy All: ${{ github.event.inputs.deploy_all }}"
+          echo "Deploy RBAC: ${{ github.event.inputs.deploy_rbac }}"
+          echo "Deploy ConfigMaps: ${{ github.event.inputs.deploy_configmaps }}"
+          echo "Deploy PVCs: ${{ github.event.inputs.deploy_pvcs }}"
+          echo "Deploy Services: ${{ github.event.inputs.deploy_services }}"
+          echo "Deploy Ingresses: ${{ github.event.inputs.deploy_ingresses }}"
+          echo "Deploy StatefulSets: ${{ github.event.inputs.deploy_statefulsets }}"
+          echo "Deploy DaemonSets: ${{ github.event.inputs.deploy_daemonsets }}"
+          echo "Deploy Deployments (Images): ${{ github.event.inputs.deploy_deployments }}"
+          echo "=========================================="
+      
+      - name: Apply RBAC resources
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_rbac == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/rbac" ] && [ "$(find k8s/charts/templates/rbac -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying RBAC resources..."
+            kubectl apply -f k8s/charts/templates/rbac/ -n axric
+          else
+            echo "No RBAC resources found, skipping..."
+          fi
+      
+      - name: Apply ConfigMaps
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_configmaps == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/configmaps" ] && [ "$(find k8s/charts/templates/configmaps -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying ConfigMaps..."
+            kubectl apply -f k8s/charts/templates/configmaps/ -n axric
+          else
+            echo "No ConfigMaps found, skipping..."
+          fi
+      
+      - name: Apply PersistentVolumeClaims
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_pvcs == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/pvcs" ] && [ "$(find k8s/charts/templates/pvcs -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying PersistentVolumeClaims..."
+            kubectl apply -f k8s/charts/templates/pvcs/ -n axric
+          else
+            echo "No PVCs found, skipping..."
+          fi
+      
+      - name: Apply Services
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_services == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/services" ] && [ "$(find k8s/charts/templates/services -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying Services..."
+            kubectl apply -f k8s/charts/templates/services/ -n axric
+          else
+            echo "No Services found, skipping..."
+          fi
+      
+      - name: Apply Ingresses
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_ingresses == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/ingresses" ] && [ "$(find k8s/charts/templates/ingresses -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying Ingresses..."
+            kubectl apply -f k8s/charts/templates/ingresses/ -n axric
+          else
+            echo "No Ingresses found, skipping..."
+          fi
+      
+      - name: Apply StatefulSets
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_statefulsets == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/statefulsets" ] && [ "$(find k8s/charts/templates/statefulsets -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying StatefulSets..."
+            kubectl apply -f k8s/charts/templates/statefulsets/ -n axric
+          else
+            echo "No StatefulSets found, skipping..."
+          fi
+      
+      - name: Apply DaemonSets
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_daemonsets == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/daemonsets" ] && [ "$(find k8s/charts/templates/daemonsets -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying DaemonSets..."
+            kubectl apply -f k8s/charts/templates/daemonsets/ -n axric
+          else
+            echo "No DaemonSets found, skipping..."
+          fi
+      
+      - name: Apply Deployments (last)
+        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_deployments == 'true' }}
+        run: |
+          if [ -d "k8s/charts/templates/deployments" ] && [ "$(find k8s/charts/templates/deployments -name '*.yaml' | wc -l)" -gt 0 ]; then
+            echo "Applying Deployments..."
+            kubectl apply -f k8s/charts/templates/deployments/ -n axric
+          else
+            echo "No Deployments found, skipping..."
+          fi
+      
+      - name: Verify deployment
+        run: |
+          echo "===== Deployment Status ====="
+          kubectl get all -n axric
+          echo ""
+          echo "===== ConfigMaps ====="
+          kubectl get configmaps -n axric
+          echo ""
+          echo "===== Services ====="
+          kubectl get svc -n axric
+          echo ""
+          echo "===== Ingresses ====="
+          kubectl get ingress -n axric
+          echo ""
+          echo "===== Pod Status ====="
+          kubectl get pods -n axric -o wide
+      
+      - name: Wait for deployments to be ready
+        run: |
+          echo "Waiting for deployments to be ready..."
+          kubectl rollout status deployment -n axric --timeout=5m || true
+          echo "Deployment completed or timed out"
+      
+      - name: Show deployment logs (last 50 lines)
+        if: always()
+        run: |
+          echo "===== Recent Pod Logs ====="
+          kubectl logs -n axric --all-containers=true -l app -f --tail=50 || true
