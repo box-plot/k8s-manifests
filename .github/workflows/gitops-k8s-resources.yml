@@ -539,5 +539,5 @@ jobs:
           fi
           
           git add k8s/
-          git commit -m "chore: Export Kubernetes resources - $(date +'%Y-%m-%d %H:%M:%S')"
+          git commit -m "chore: Update Helm Kubernetes resources - $(date +'%Y-%m-%d %H:%M:%S')"
           git push
