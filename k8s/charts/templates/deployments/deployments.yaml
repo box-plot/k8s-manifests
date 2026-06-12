@@ -1,0 +1,61 @@
+{{- range $appName, $app := .Values.apps }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $app.name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $appName }}
+spec:
+  replicas: {{ $app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+  strategy:
+    type: {{ $app.strategy | default "RollingUpdate" }}
+    {{- if eq ($app.strategy | default "RollingUpdate") "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      containers:
+      - name: {{ $appName }}
+        image: {{ $app.image }}
+        imagePullPolicy: {{ $app.pullPolicy | default "IfNotPresent" }}
+        ports:
+        - containerPort: {{ $app.port | default 8080 }}
+        {{- if $app.envFrom }}
+        envFrom:
+        {{- range $app.envFrom }}
+        - configMapRef:
+            name: {{ .name }}
+        {{- end }}
+        {{- end }}
+        {{- if $app.livenessProbe }}
+        livenessProbe:
+          {{ toYaml $app.livenessProbe | nindent 20 }}
+        {{- end }}
+        {{- if $app.readinessProbe }}
+        readinessProbe:
+          {{ toYaml $app.readinessProbe | nindent 20 }}
+        {{- end }}
+        {{- if $app.resources }}
+        resources:
+          {{- if $app.resources.requests }}
+          requests:
+            cpu: {{ $app.resources.requests.cpu }}
+            memory: {{ $app.resources.requests.memory }}
+          {{- end }}
+          {{- if $app.resources.limits }}
+          limits:
+            cpu: {{ $app.resources.limits.cpu }}
+            memory: {{ $app.resources.limits.memory }}
+          {{- end }}
+        {{- end }}
+{{- end }}

@@ -1,0 +1,35 @@
+namespace: axric
+export:
+  namespaces: "axric"
+  exportSecrets: false
+  exportClusterRbac: false
+  exportCustomResources: false
+apps:
+  axricApi:
+    name: axric-api
+    image: jaron197/axric-api:1.0.26
+    replicaCount: 2
+    port: 3000
+    pullPolicy: Always
+    strategy: RollingUpdate
+    resources:
+      requests:
+        cpu: ""
+        memory: ""
+      limits:
+        cpu: ""
+        memory: ""
+  axricFe:
+    name: axric-fe
+    image: jaron197/axric-fe:1.0.26
+    replicaCount: 3
+    port: 8080
+    pullPolicy: IfNotPresent
+    strategy: RollingUpdate
+    resources:
+      requests:
+        cpu: ""
+        memory: ""
+      limits:
+        cpu: ""
+        memory: ""
