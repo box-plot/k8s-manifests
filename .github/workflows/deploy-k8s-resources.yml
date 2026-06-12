@@ -238,9 +238,3 @@ jobs:
           echo "Waiting for deployments to be ready..."
           kubectl rollout status deployment -n axric --timeout=5m || true
           echo "Deployment completed or timed out"
-      
-      - name: Show deployment logs (last 50 lines)
-        if: always()
-        run: |
-          echo "===== Recent Pod Logs ====="
-          kubectl logs -n axric --all-containers=true -l app -f --tail=50 || true
