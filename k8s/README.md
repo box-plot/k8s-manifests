@@ -66,7 +66,8 @@ To trigger an export manually:
 
 ## Notes
 
-- Sensitive data in Secrets is base64 encoded
-- Some cluster-specific information may need adjustment
-- Custom resources are exported if CRDs exist in the cluster
+- This workflow removes runtime metadata for GitOps-friendly diffs
+- Secrets are NOT exported by default (`EXPORT_SECRETS=false`)
+- Cluster RBAC and custom resources are disabled by default
+- Set workflow env vars to enable additional resource exports
 

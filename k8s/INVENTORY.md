@@ -5,16 +5,13 @@ Generated: $(date)
 ## Export Statistics
 
 ### Deployments
-  4558 total
+107 k8s/charts/templates/deployments/axric/deployments.yaml
 ### StatefulSets
-  994 total
 ### DaemonSets
-  826 total
 ### ConfigMaps
- 1759 total
+62 k8s/charts/templates/configmaps/axric/configmaps.yaml
 ### Secrets
-  230 total
 ### Services
- 1082 total
+34 k8s/charts/templates/services/axric/services.yaml
 ### Ingresses
-  96 total
+27 k8s/charts/templates/ingresses/axric/ingresses.yaml
