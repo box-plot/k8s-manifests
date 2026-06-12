@@ -77,24 +77,17 @@ jobs:
                 .metadata.managedFields,
                 .metadata.annotations."kubectl.kubernetes.io/last-applied-configuration",
                 .metadata.annotations."deployment.kubernetes.io/revision",
-                .status
+                .status,
+                .spec.clusterIP,
+                .spec.clusterIPs,
+                .spec.healthCheckNodePort,
+                .spec.ipFamilies,
+                .spec.ipFamilyPolicy,
+                .spec.internalTrafficPolicy,
+                .spec.allocateLoadBalancerNodePorts,
+                .spec.sessionAffinityConfig,
+                .spec.volumeName
               )
-              | if .kind == "Service" then
-                  del(
-                    .spec.clusterIP,
-                    .spec.clusterIPs,
-                    .spec.healthCheckNodePort,
-                    .spec.ipFamilies,
-                    .spec.ipFamilyPolicy,
-                    .spec.internalTrafficPolicy,
-                    .spec.allocateLoadBalancerNodePorts,
-                    .spec.sessionAffinityConfig
-                  )
-                elif .kind == "PersistentVolumeClaim" then
-                  del(.spec.volumeName)
-                else
-                  .
-                end
             ' -i "$file"
           }
 
