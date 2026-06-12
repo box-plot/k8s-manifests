@@ -1,4 +1,4 @@
-name: Export K8s Resources to Helm
+name: GitOps K8s Resources to Helm
 
 on:
   workflow_dispatch:
