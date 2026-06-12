@@ -1,0 +1,394 @@
+name: Export K8s Resources to Helm
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  export-k8s-resources:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      
+      - name: Configure kubectl
+        run: |
+          # Create kubeconfig from secrets
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          
+          # Verify connection
+          kubectl cluster-info
+          kubectl get nodes
+      
+      - name: Create Helm charts templates directories
+        run: |
+          mkdir -p k8s/charts/templates/{deployments,configmaps,secrets,services,ingresses,statefulsets,daemonsets,pvcs,rbac,custom-resources}
+      
+      - name: Export Deployments
+        run: |
+          kubectl get deployments -A -o yaml > k8s/charts/templates/deployments/all-deployments.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/deployments/$ns
+            kubectl get deployments -n $ns -o yaml > k8s/charts/templates/deployments/$ns/deployments.yaml 2>/dev/null || true
+          done
+      
+      - name: Export StatefulSets
+        run: |
+          kubectl get statefulsets -A -o yaml > k8s/charts/templates/statefulsets/all-statefulsets.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/statefulsets/$ns
+            kubectl get statefulsets -n $ns -o yaml > k8s/charts/templates/statefulsets/$ns/statefulsets.yaml 2>/dev/null || true
+          done
+      
+      - name: Export DaemonSets
+        run: |
+          kubectl get daemonsets -A -o yaml > k8s/charts/templates/daemonsets/all-daemonsets.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/daemonsets/$ns
+            kubectl get daemonsets -n $ns -o yaml > k8s/charts/templates/daemonsets/$ns/daemonsets.yaml 2>/dev/null || true
+          done
+      
+      - name: Export ConfigMaps
+        run: |
+          kubectl get configmaps -A -o yaml > k8s/charts/templates/configmaps/all-configmaps.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/configmaps/$ns
+            kubectl get configmaps -n $ns -o yaml > k8s/charts/templates/configmaps/$ns/configmaps.yaml 2>/dev/null || true
+          done
+      
+      - name: Export Secrets
+        run: |
+          kubectl get secrets -A -o yaml > k8s/charts/templates/secrets/all-secrets.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/secrets/$ns
+            kubectl get secrets -n $ns -o yaml > k8s/charts/templates/secrets/$ns/secrets.yaml 2>/dev/null || true
+          done
+      
+      - name: Export Services
+        run: |
+          kubectl get services -A -o yaml > k8s/charts/templates/services/all-services.yaml
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/services/$ns
+            kubectl get services -n $ns -o yaml > k8s/charts/templates/services/$ns/services.yaml 2>/dev/null || true
+          done
+      
+      - name: Export Ingresses
+        run: |
+          kubectl get ingresses -A -o yaml > k8s/charts/templates/ingresses/all-ingresses.yaml 2>/dev/null || true
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/ingresses/$ns
+            kubectl get ingresses -n $ns -o yaml > k8s/charts/templates/ingresses/$ns/ingresses.yaml 2>/dev/null || true
+          done
+      
+      - name: Export PersistentVolumeClaims
+        run: |
+          kubectl get pvc -A -o yaml > k8s/charts/templates/pvcs/all-pvcs.yaml 2>/dev/null || true
+          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+            mkdir -p k8s/charts/templates/pvcs/$ns
+            kubectl get pvc -n $ns -o yaml > k8s/charts/templates/pvcs/$ns/pvcs.yaml 2>/dev/null || true
+          done
+      
+      - name: Export RBAC Resources
+        run: |
+          mkdir -p k8s/charts/templates/rbac
+          kubectl get clusterroles -o yaml > k8s/charts/templates/rbac/clusterroles.yaml 2>/dev/null || true
+          kubectl get clusterrolebindings -o yaml > k8s/charts/templates/rbac/clusterrolebindings.yaml 2>/dev/null || true
+          kubectl get roles -A -o yaml > k8s/charts/templates/rbac/roles.yaml 2>/dev/null || true
+          kubectl get rolebindings -A -o yaml > k8s/charts/templates/rbac/rolebindings.yaml 2>/dev/null || true
+          kubectl get serviceaccounts -A -o yaml > k8s/charts/templates/rbac/serviceaccounts.yaml 2>/dev/null || true
+      
+      - name: Export Custom Resources
+        run: |
+          mkdir -p k8s/charts/templates/custom-resources
+          # Export common CRDs
+          for crd in $(kubectl get crd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+            if kubectl get $crd -A -o yaml 2>/dev/null | grep -q kind; then
+              mkdir -p k8s/charts/templates/custom-resources/$crd
+              kubectl get $crd -A -o yaml > k8s/charts/templates/custom-resources/$crd/$crd.yaml 2>/dev/null || true
+            fi
+          done
+      
+      - name: Create Helm Chart Structure
+        run: |
+          cat > k8s/charts/Chart.yaml << 'EOF'
+          apiVersion: v2
+          name: k8s-export
+          description: Exported Kubernetes resources as Helm chart
+          type: application
+          version: 1.0.0
+          appVersion: "1.0"
+          keywords:
+            - kubernetes
+            - export
+            - manifests
+          maintainers:
+            - name: DevOps Team
+              email: devops@example.com
+          EOF
+      
+      - name: Create Helm values.yaml
+        run: |
+          cat > k8s/charts/values.yaml << 'EOF'
+          # Helm Chart Values for K8s Resources Export
+          # Generated from cluster export
+          
+          replicaCount: 1
+          
+          # Resources to enable/disable
+          resources:
+            deployments:
+              enabled: true
+            statefulsets:
+              enabled: true
+            daemonsets:
+              enabled: true
+            configmaps:
+              enabled: true
+            secrets:
+              enabled: true
+            services:
+              enabled: true
+            ingresses:
+              enabled: true
+          
+          # Update strategy
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 1
+              maxUnavailable: 0
+          
+          # Image pull secrets
+          imagePullSecrets: []
+          
+          # Service account
+          serviceAccount:
+            create: true
+            annotations: {}
+            name: ""
+          EOF
+      
+      - name: Create Helm helpers template
+        run: |
+          cat > k8s/charts/templates/_helpers.tpl << 'EOF'
+          {{/*
+          Expand the name of the chart.
+          */}}
+          {{- define "k8s-export.name" -}}
+          {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+          {{- end }}
+          
+          {{/*
+          Create a default fully qualified app name.
+          */}}
+          {{- define "k8s-export.fullname" -}}
+          {{- if .Values.fullnameOverride }}
+          {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+          {{- else }}
+          {{- $name := default .Chart.Name .Values.nameOverride }}
+          {{- if contains $name .Release.Name }}
+          {{- .Release.Name | trunc 63 | trimSuffix "-" }}
+          {{- else }}
+          {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          
+          {{/*
+          Create chart name and version as used by the chart label.
+          */}}
+          {{- define "k8s-export.chart" -}}
+          {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+          {{- end }}
+          
+          {{/*
+          Common labels
+          */}}
+          {{- define "k8s-export.labels" -}}
+          helm.sh/chart: {{ include "k8s-export.chart" . }}
+          {{ include "k8s-export.selectorLabels" . }}
+          {{- if .Chart.AppVersion }}
+          app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+          {{- end }}
+          app.kubernetes.io/managed-by: {{ .Release.Service }}
+          {{- end }}
+          
+          {{/*
+          Selector labels
+          */}}
+          {{- define "k8s-export.selectorLabels" -}}
+          app.kubernetes.io/name: {{ include "k8s-export.name" . }}
+          app.kubernetes.io/instance: {{ .Release.Name }}
+          {{- end }}
+          EOF
+      
+      - name: Create README
+        run: |
+          cat > k8s/README.md << 'EOF'
+          # Kubernetes Resources Export
+          
+          This directory contains exported Kubernetes resources as a Helm chart.
+          
+          ## Directory Structure
+          
+          - **charts/**: Helm chart with all Kubernetes resources
+            - **Chart.yaml**: Helm chart metadata
+            - **values.yaml**: Chart configuration
+            - **templates/**: Exported Kubernetes manifests organized by resource type and namespace
+          
+          ### Exported Resource Types
+          
+          - `deployments/` - Kubernetes Deployments
+          - `statefulsets/` - StatefulSets
+          - `daemonsets/` - DaemonSets
+          - `configmaps/` - ConfigMaps
+          - `secrets/` - Secrets
+          - `services/` - Services
+          - `ingresses/` - Ingress resources
+          - `pvcs/` - PersistentVolumeClaims
+          - `rbac/` - RBAC resources (Roles, RoleBindings, etc.)
+          - `custom-resources/` - Custom Resource Definitions and instances
+          
+          ## Installation
+          
+          ### Using Helm
+          
+          ```bash
+          # Install the chart
+          helm install k8s-export ./charts
+          
+          # Upgrade the chart
+          helm upgrade k8s-export ./charts
+          
+          # Install with custom values
+          helm install k8s-export ./charts -f custom-values.yaml
+          ```
+          
+          ### Manual deployment
+          
+          ```bash
+          # Apply exported resources directly
+          kubectl apply -f charts/templates/deployments/
+          kubectl apply -f charts/templates/services/
+          # ... and so on
+          ```
+          
+          ## Export Schedule
+          
+          Resources are automatically exported daily at 2 AM UTC via GitHub Actions workflow.
+          
+          ## Manual Export
+          
+          To trigger an export manually:
+          
+          1. Go to Actions tab in GitHub
+          2. Select "Export K8s Resources to Helm" workflow
+          3. Click "Run workflow"
+          
+          ## Requirements
+          
+          - Valid Kubernetes cluster credentials in `KUBE_CONFIG` secret
+          - GitHub Actions enabled
+          - Appropriate permissions to read cluster resources
+          
+          ## Notes
+          
+          - Sensitive data in Secrets is base64 encoded
+          - Some cluster-specific information may need adjustment
+          - Custom resources are exported if CRDs exist in the cluster
+          
+          EOF
+      
+      - name: Generate inventory
+        run: |
+          cat > k8s/INVENTORY.md << 'EOF'
+          # Kubernetes Resources Inventory
+          
+          Generated: $(date)
+          
+          ## Export Statistics
+          
+          EOF
+          
+          echo "### Deployments" >> k8s/INVENTORY.md
+          find k8s/charts/templates/deployments -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### StatefulSets" >> k8s/INVENTORY.md
+          find k8s/charts/templates/statefulsets -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### DaemonSets" >> k8s/INVENTORY.md
+          find k8s/charts/templates/daemonsets -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### ConfigMaps" >> k8s/INVENTORY.md
+          find k8s/charts/templates/configmaps -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### Secrets" >> k8s/INVENTORY.md
+          find k8s/charts/templates/secrets -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### Services" >> k8s/INVENTORY.md
+          find k8s/charts/templates/services -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+          
+          echo "### Ingresses" >> k8s/INVENTORY.md
+          find k8s/charts/templates/ingresses -name "*.yaml" -exec wc -l {} + | tail -1 >> k8s/INVENTORY.md || echo "0 files" >> k8s/INVENTORY.md
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Check if there are changes
+          if [[ -z $(git status -s) ]]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git add k8s/
+          git commit -m "chore: Export Kubernetes resources - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+      
+      - name: Create release (optional)
+        if: success()
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: k8s-export-${{ github.run_number }}
+          release_name: K8s Export Release ${{ github.run_number }}
+          body: |
+            Kubernetes resources exported on ${{ github.event.head_commit.timestamp }}
+            
+            This release contains exported Kubernetes manifests packaged as a Helm chart.
+            
+            ## Contents
+            - Deployments
+            - StatefulSets
+            - DaemonSets
+            - ConfigMaps
+            - Secrets
+            - Services
+            - Ingresses
+            - RBAC resources
+            - Custom resources
+          draft: false
+          prerelease: false
