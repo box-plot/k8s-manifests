@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    meta.helm.sh/release-name: axric-release
+    meta.helm.sh/release-namespace: axric
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: axric-ingress
+  namespace: axric
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: axrique.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: axric-fe
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - axrique.com
+      secretName: axric-fe-tls
+---
+
