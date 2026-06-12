@@ -12,6 +12,24 @@ The `export-k8s-resources.yml` workflow automatically exports your Kubernetes cl
 
 ## Setup Instructions
 
+### Configure Namespaces (Optional)
+
+By default, the workflow exports from these namespaces:
+- **axric** (primary application namespace)
+- **kube-system** (Kubernetes system components)
+- **ingress-nginx** (Ingress controller)
+- **argocd** (GitOps)
+- **database** (Database services)
+
+To customize which namespaces to export, edit the workflow file:
+
+```yaml
+env:
+  EXPORT_NAMESPACES: "axric kube-system ingress-nginx argocd database"
+```
+
+Change the `EXPORT_NAMESPACES` value to include/exclude namespaces as needed.
+
 ### 1. Create Kubernetes Service Account (Recommended for CI/CD)
 
 ```bash

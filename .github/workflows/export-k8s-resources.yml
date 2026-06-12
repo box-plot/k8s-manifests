@@ -13,6 +13,11 @@ permissions:
 jobs:
   export-k8s-resources:
     runs-on: ubuntu-latest
+    env:
+      # Namespaces to export (space-separated)
+      # Primary app namespace: axric
+      # System namespaces: kube-system, ingress-nginx, argocd, database
+      EXPORT_NAMESPACES: "axric kube-system ingress-nginx argocd database"
     
     steps:
       - name: Checkout repository
@@ -45,10 +50,21 @@ jobs:
         run: |
           mkdir -p k8s/charts/templates/{deployments,configmaps,secrets,services,ingresses,statefulsets,daemonsets,pvcs,rbac,custom-resources}
       
+      - name: Display export configuration
+        run: |
+          echo "====================================="
+          echo "K8s Export Configuration"
+          echo "====================================="
+          echo "Exporting from namespaces:"
+          for ns in $EXPORT_NAMESPACES; do
+            echo "  - $ns"
+          done
+          echo "====================================="
+      
       - name: Export Deployments
         run: |
           kubectl get deployments -A -o yaml > k8s/charts/templates/deployments/all-deployments.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/deployments/$ns
             kubectl get deployments -n $ns -o yaml > k8s/charts/templates/deployments/$ns/deployments.yaml 2>/dev/null || true
           done
@@ -56,7 +72,7 @@ jobs:
       - name: Export StatefulSets
         run: |
           kubectl get statefulsets -A -o yaml > k8s/charts/templates/statefulsets/all-statefulsets.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/statefulsets/$ns
             kubectl get statefulsets -n $ns -o yaml > k8s/charts/templates/statefulsets/$ns/statefulsets.yaml 2>/dev/null || true
           done
@@ -64,7 +80,7 @@ jobs:
       - name: Export DaemonSets
         run: |
           kubectl get daemonsets -A -o yaml > k8s/charts/templates/daemonsets/all-daemonsets.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/daemonsets/$ns
             kubectl get daemonsets -n $ns -o yaml > k8s/charts/templates/daemonsets/$ns/daemonsets.yaml 2>/dev/null || true
           done
@@ -72,7 +88,7 @@ jobs:
       - name: Export ConfigMaps
         run: |
           kubectl get configmaps -A -o yaml > k8s/charts/templates/configmaps/all-configmaps.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/configmaps/$ns
             kubectl get configmaps -n $ns -o yaml > k8s/charts/templates/configmaps/$ns/configmaps.yaml 2>/dev/null || true
           done
@@ -80,7 +96,7 @@ jobs:
       - name: Export Secrets
         run: |
           kubectl get secrets -A -o yaml > k8s/charts/templates/secrets/all-secrets.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/secrets/$ns
             kubectl get secrets -n $ns -o yaml > k8s/charts/templates/secrets/$ns/secrets.yaml 2>/dev/null || true
           done
@@ -88,7 +104,7 @@ jobs:
       - name: Export Services
         run: |
           kubectl get services -A -o yaml > k8s/charts/templates/services/all-services.yaml
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/services/$ns
             kubectl get services -n $ns -o yaml > k8s/charts/templates/services/$ns/services.yaml 2>/dev/null || true
           done
@@ -96,7 +112,7 @@ jobs:
       - name: Export Ingresses
         run: |
           kubectl get ingresses -A -o yaml > k8s/charts/templates/ingresses/all-ingresses.yaml 2>/dev/null || true
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/ingresses/$ns
             kubectl get ingresses -n $ns -o yaml > k8s/charts/templates/ingresses/$ns/ingresses.yaml 2>/dev/null || true
           done
@@ -104,7 +120,7 @@ jobs:
       - name: Export PersistentVolumeClaims
         run: |
           kubectl get pvc -A -o yaml > k8s/charts/templates/pvcs/all-pvcs.yaml 2>/dev/null || true
-          for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          for ns in $EXPORT_NAMESPACES; do
             mkdir -p k8s/charts/templates/pvcs/$ns
             kubectl get pvc -n $ns -o yaml > k8s/charts/templates/pvcs/$ns/pvcs.yaml 2>/dev/null || true
           done
