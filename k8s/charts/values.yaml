@@ -89,7 +89,7 @@ apps:
     name: axric-fe
     replicaCount: 3
     revisionHistoryLimit: 10
-    image: jaron197/axric-fe:1.0.26
+    image: jaron197/axric-fe:1.0.13
     pullPolicy: IfNotPresent
     port: 80
     strategy:
