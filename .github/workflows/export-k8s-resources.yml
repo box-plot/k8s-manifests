@@ -136,7 +136,7 @@ jobs:
           echo "Export custom resources: $EXPORT_CUSTOM_RESOURCES"
           echo "====================================="
 
-          export_resource deployments deployments deployments.yaml
+          echo "Skipping raw deployment export to preserve Helm-templated deployments"
           export_resource statefulsets statefulsets statefulsets.yaml
           export_resource daemonsets daemonsets daemonsets.yaml
           export_resource configmaps configmaps configmaps.yaml

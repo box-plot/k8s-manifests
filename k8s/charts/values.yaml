@@ -1,6 +1,8 @@
 # Helm Chart Values for K8s Resources Export
 # Generated from cluster export
 
+namespace: axric
+
 replicaCount: 1
 
 # Resources to enable/disable
@@ -41,3 +43,60 @@ serviceAccount:
   create: true
   annotations: {}
   name: ""
+
+# Values-driven app deployments
+apps:
+  axricApi:
+    name: axric-api
+    replicaCount: 2
+    revisionHistoryLimit: 10
+    image: jaron197/axric-api:1.0.26
+    pullPolicy: Always
+    port: 3000
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    envFrom:
+      - configMapRef:
+          name: axric-backend-config
+      - secretRef:
+          name: axric-backend-secret
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /health
+        port: 3000
+        scheme: HTTP
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      successThreshold: 1
+      timeoutSeconds: 1
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /health
+        port: 3000
+        scheme: HTTP
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources: {}
+
+  axricFe:
+    name: axric-fe
+    replicaCount: 3
+    revisionHistoryLimit: 10
+    image: jaron197/axric-fe:1.0.26
+    pullPolicy: IfNotPresent
+    port: 80
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    podAnnotations:
+      kubectl.kubernetes.io/restartedAt: "2026-03-04T16:33:41+07:00"
+    resources: {}
