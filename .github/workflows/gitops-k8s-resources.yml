@@ -2,6 +2,8 @@ name: Export K8s Resources to Helm
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [deployment-app]
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
@@ -123,7 +125,7 @@ jobs:
           echo "Export cluster RBAC: $EXPORT_CLUSTER_RBAC"
           echo "Export custom resources: $EXPORT_CUSTOM_RESOURCES"
           echo "====================================="
-          export_resource deployments deployments deployments.yaml
+          # Skip raw deployments - we'll template them from values.yaml
           export_resource statefulsets statefulsets statefulsets.yaml
           export_resource daemonsets daemonsets daemonsets.yaml
           export_resource configmaps configmaps configmaps.yaml
@@ -162,6 +164,8 @@ jobs:
       
       - name: Create Helm Chart Structure
         run: |
+          mkdir -p k8s/charts/templates/{deployments,configmaps,services,ingresses,statefulsets,daemonsets,pvcs,rbac}
+          
           cat > k8s/charts/Chart.yaml << 'EOF'
           apiVersion: v2
           name: k8s-export
@@ -178,52 +182,150 @@ jobs:
               email: jaronthongfoo@gmail.com
           EOF
       
-      - name: Create Helm values.yaml
+      - name: Create or update values.yaml from cluster
         run: |
-          cat > k8s/charts/values.yaml << 'EOF'
-          # Helm Chart Values for K8s Resources Export
-          # Generated from cluster export
+          set -euo pipefail
           
-          replicaCount: 1
+          # Helper to convert kebab-case to camelCase
+          to_camel_case() {
+            echo "$1" | sed -r 's/(^|-)([a-z])/\U\2/g' | sed 's/^./\L&/'
+          }
           
-          # Resources to enable/disable
-          resources:
-            deployments:
-              enabled: true
-            statefulsets:
-              enabled: true
-            daemonsets:
-              enabled: true
-            configmaps:
-              enabled: true
-            secrets:
-              enabled: false
-            services:
-              enabled: true
-            ingresses:
-              enabled: true
-          export:
-            namespaces: "axric"
-            exportSecrets: false
-            exportClusterRbac: false
-            exportCustomResources: false
+          VALUES_FILE="k8s/charts/values.yaml"
           
-          # Update strategy
-          updateStrategy:
-            type: RollingUpdate
-            rollingUpdate:
-              maxSurge: 1
-              maxUnavailable: 0
-          
-          # Image pull secrets
-          imagePullSecrets: []
-          
-          # Service account
-          serviceAccount:
-            create: true
-            annotations: {}
-            name: ""
-          EOF
+          # If values.yaml doesn't exist, create it from cluster
+          if [ ! -f "$VALUES_FILE" ]; then
+            echo "Creating values.yaml from live cluster state..."
+            
+            cat > "$VALUES_FILE" << 'EOFV'
+          namespace: axric
+          apps: {}
+          EOFV
+            
+            # Export deployments and build apps section
+            for ns in $EXPORT_NAMESPACES; do
+              if ! kubectl get namespace "$ns" >/dev/null 2>&1; then
+                continue
+              fi
+              
+              kubectl get deploy -n "$ns" -o json | jq -r '.items[] | "\(.metadata.name)|\(.spec.replicas)|\(.spec.template.spec.containers[0].image)|\(.spec.template.spec.containers[0].ports[0].containerPort // 8080)|\(.spec.template.spec.containers[0].imagePullPolicy // "IfNotPresent")"' | while IFS='|' read -r deploy_name replicas image port pull_policy; do
+                app_key=$(to_camel_case "$deploy_name")
+                
+                # Extract image tag
+                image_tag="${image##*/}"
+                
+                # Get strategy
+                strategy=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.strategy.type}' || echo "RollingUpdate")
+                
+                # Get resource requests/limits
+                requests_cpu=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.template.spec.containers[0].resources.requests.cpu}' || echo "100m")
+                requests_mem=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.template.spec.containers[0].resources.requests.memory}' || echo "128Mi")
+                limits_cpu=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.template.spec.containers[0].resources.limits.cpu}' || echo "500m")
+                limits_mem=$(kubectl get deploy "$deploy_name" -n "$ns" -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}' || echo "512Mi")
+                
+                echo "Adding app: $app_key from $deploy_name"
+                
+                # Add app to values.yaml
+                yq eval ".apps.$app_key = {
+                  name: \"$deploy_name\",
+                  image: \"$image\",
+                  replicaCount: $((replicas > 0 ? replicas : 1)),
+                  port: $port,
+                  pullPolicy: \"$pull_policy\",
+                  strategy: \"$strategy\",
+                  resources: {
+                    requests: {cpu: \"$requests_cpu\", memory: \"$requests_mem\"},
+                    limits: {cpu: \"$limits_cpu\", memory: \"$limits_mem\"}
+                  }
+                }" -i "$VALUES_FILE"
+              done
+            done
+          else
+            echo "values.yaml exists. Syncing image tags from cluster..."
+            
+            # Only update image tags from live deployments
+            for ns in $EXPORT_NAMESPACES; do
+              if ! kubectl get namespace "$ns" >/dev/null 2>&1; then
+                continue
+              fi
+              
+              kubectl get deploy -n "$ns" -o json | jq -r '.items[] | "\(.metadata.name)|\(.spec.template.spec.containers[0].image)"' | while IFS='|' read -r deploy_name image; do
+                app_key=$(to_camel_case "$deploy_name")
+                
+                # Check if app exists in values
+                if yq eval ".apps.$app_key" "$VALUES_FILE" | grep -q "name:"; then
+                  echo "Updating image tag for $app_key: $image"
+                  yq eval ".apps.$app_key.image = \"$image\"" -i "$VALUES_FILE"
+                fi
+              done
+            done
+          fi
+      
+      - name: Create Helm deployment template
+        run: |
+          cat > k8s/charts/templates/deployments/deployments.yaml << 'EOFHELM'
+          {{- range $appName, $app := .Values.apps }}
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: {{ $app.name }}
+            namespace: {{ $.Values.namespace }}
+            labels:
+              app: {{ $appName }}
+          spec:
+            replicas: {{ $app.replicaCount }}
+            selector:
+              matchLabels:
+                app: {{ $appName }}
+            strategy:
+              type: {{ $app.strategy | default "RollingUpdate" }}
+              {{- if eq ($app.strategy | default "RollingUpdate") "RollingUpdate" }}
+              rollingUpdate:
+                maxSurge: 1
+                maxUnavailable: 0
+              {{- end }}
+            template:
+              metadata:
+                labels:
+                  app: {{ $appName }}
+              spec:
+                containers:
+                - name: {{ $appName }}
+                  image: {{ $app.image }}
+                  imagePullPolicy: {{ $app.pullPolicy | default "IfNotPresent" }}
+                  ports:
+                  - containerPort: {{ $app.port | default 8080 }}
+                  {{- if $app.envFrom }}
+                  envFrom:
+                  {{- range $app.envFrom }}
+                  - configMapRef:
+                      name: {{ .name }}
+                  {{- end }}
+                  {{- end }}
+                  {{- if $app.livenessProbe }}
+                  livenessProbe:
+                    {{ toYaml $app.livenessProbe | nindent 20 }}
+                  {{- end }}
+                  {{- if $app.readinessProbe }}
+                  readinessProbe:
+                    {{ toYaml $app.readinessProbe | nindent 20 }}
+                  {{- end }}
+                  {{- if $app.resources }}
+                  resources:
+                    {{- if $app.resources.requests }}
+                    requests:
+                      cpu: {{ $app.resources.requests.cpu }}
+                      memory: {{ $app.resources.requests.memory }}
+                    {{- end }}
+                    {{- if $app.resources.limits }}
+                    limits:
+                      cpu: {{ $app.resources.limits.cpu }}
+                      memory: {{ $app.resources.limits.memory }}
+                    {{- end }}
+                  {{- end }}
+          {{- end }}
+          EOFHELM
       
       - name: Create Helm helpers template
         run: |
