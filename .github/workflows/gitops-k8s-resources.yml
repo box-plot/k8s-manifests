@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  export-k8s-resources:
+  gitops-sync-k8s-resources:
     runs-on: ubuntu-latest
     env:
       # Namespaces to export (space-separated)
