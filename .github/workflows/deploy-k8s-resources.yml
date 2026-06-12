@@ -125,19 +125,19 @@ jobs:
           echo "=========================================="
           echo "Deployment Configuration:"
           echo "=========================================="
-          echo "Deploy All: ${{ github.event.inputs.deploy_all }}"
-          echo "Deploy RBAC: ${{ github.event.inputs.deploy_rbac }}"
-          echo "Deploy ConfigMaps: ${{ github.event.inputs.deploy_configmaps }}"
-          echo "Deploy PVCs: ${{ github.event.inputs.deploy_pvcs }}"
-          echo "Deploy Services: ${{ github.event.inputs.deploy_services }}"
-          echo "Deploy Ingresses: ${{ github.event.inputs.deploy_ingresses }}"
-          echo "Deploy StatefulSets: ${{ github.event.inputs.deploy_statefulsets }}"
-          echo "Deploy DaemonSets: ${{ github.event.inputs.deploy_daemonsets }}"
-          echo "Deploy Deployments (Images): ${{ github.event.inputs.deploy_deployments }}"
+          echo "Deploy All: ${{ github.event.inputs.deploy_all || 'false' }}"
+          echo "Deploy RBAC: ${{ github.event.inputs.deploy_rbac || 'false' }}"
+          echo "Deploy ConfigMaps: ${{ github.event.inputs.deploy_configmaps || 'false' }}"
+          echo "Deploy PVCs: ${{ github.event.inputs.deploy_pvcs || 'false' }}"
+          echo "Deploy Services: ${{ github.event.inputs.deploy_services || 'false' }}"
+          echo "Deploy Ingresses: ${{ github.event.inputs.deploy_ingresses || 'false' }}"
+          echo "Deploy StatefulSets: ${{ github.event.inputs.deploy_statefulsets || 'false' }}"
+          echo "Deploy DaemonSets: ${{ github.event.inputs.deploy_daemonsets || 'false' }}"
+          echo "Deploy Deployments (Images): ${{ github.event.inputs.deploy_deployments || 'true' }}"
           echo "=========================================="
       
       - name: Apply RBAC resources
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_rbac == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_rbac || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/rbac" ] && [ "$(find k8s/charts/templates/rbac -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying RBAC resources..."
@@ -147,7 +147,7 @@ jobs:
           fi
       
       - name: Apply ConfigMaps
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_configmaps == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_configmaps || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/configmaps" ] && [ "$(find k8s/charts/templates/configmaps -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying ConfigMaps..."
@@ -157,7 +157,7 @@ jobs:
           fi
       
       - name: Apply PersistentVolumeClaims
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_pvcs == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_pvcs || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/pvcs" ] && [ "$(find k8s/charts/templates/pvcs -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying PersistentVolumeClaims..."
@@ -167,7 +167,7 @@ jobs:
           fi
       
       - name: Apply Services
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_services == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_services || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/services" ] && [ "$(find k8s/charts/templates/services -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Services..."
@@ -177,7 +177,7 @@ jobs:
           fi
       
       - name: Apply Ingresses
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_ingresses == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_ingresses || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/ingresses" ] && [ "$(find k8s/charts/templates/ingresses -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Ingresses..."
@@ -187,7 +187,7 @@ jobs:
           fi
       
       - name: Apply StatefulSets
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_statefulsets == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_statefulsets || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/statefulsets" ] && [ "$(find k8s/charts/templates/statefulsets -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying StatefulSets..."
@@ -197,7 +197,7 @@ jobs:
           fi
       
       - name: Apply DaemonSets
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_daemonsets == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_daemonsets || 'false') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/daemonsets" ] && [ "$(find k8s/charts/templates/daemonsets -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying DaemonSets..."
@@ -207,7 +207,7 @@ jobs:
           fi
       
       - name: Apply Deployments (last)
-        if: ${{ github.event.inputs.deploy_all == 'true' || github.event.inputs.deploy_deployments == 'true' }}
+        if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_deployments || 'true') == 'true' }}
         run: |
           if [ -d "k8s/charts/templates/deployments" ] && [ "$(find k8s/charts/templates/deployments -name '*.yaml' | wc -l)" -gt 0 ]; then
             echo "Applying Deployments..."
