@@ -1,0 +1,315 @@
+apiVersion: v1
+items:
+- apiVersion: crd.projectcalico.org/v1
+  kind: IPAMBlock
+  metadata:
+    annotations:
+      projectcalico.org/metadata: '{"creationTimestamp":null}'
+    creationTimestamp: "2026-03-04T08:00:38Z"
+    generation: 397
+    name: 192-168-243-192-26
+    resourceVersion: "12144310"
+    uid: 085ddaf3-2d00-4ccc-bfc8-c8b964567fcd
+  spec:
+    affinity: host:ubuntu
+    allocations:
+    - 0
+    - 1
+    - null
+    - null
+    - 14
+    - 18
+    - null
+    - 19
+    - 16
+    - null
+    - 17
+    - 9
+    - 7
+    - null
+    - 6
+    - 2
+    - 5
+    - null
+    - 3
+    - 4
+    - 8
+    - 10
+    - null
+    - null
+    - 11
+    - null
+    - null
+    - null
+    - 12
+    - null
+    - null
+    - null
+    - null
+    - 13
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - 15
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    attributes:
+    - handle_id: ipip-tunnel-addr-ubuntu
+      secondary:
+        node: ubuntu
+        type: ipipTunnelAddress
+    - handle_id: k8s-pod-network.915346a7e764627b631bc9373704e55f49352b4ca4a0112f2044d7e55e1219e8
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-notifications-controller-b48df5667-b7gvd
+        timestamp: 2026-04-17 09:15:39.899534369 +0000 UTC
+    - handle_id: k8s-pod-network.a77ac98e8bf914e9ecac68e0fbd17e83c0e12a76608d8ba1855a01aeeff7cacf
+      secondary:
+        namespace: kube-system
+        node: ubuntu
+        pod: coredns-76f75df574-6nm55
+        timestamp: 2026-04-17 09:15:40.400463888 +0000 UTC
+    - handle_id: k8s-pod-network.48cab10a8ef083f61b2358898c17718f751870957f418d6c5efeeeee05f0b20a
+      secondary:
+        namespace: kube-system
+        node: ubuntu
+        pod: coredns-76f75df574-blm7s
+        timestamp: 2026-04-17 09:15:40.535217216 +0000 UTC
+    - handle_id: k8s-pod-network.3afd5500d79d217344ab110e18e5d2e0bbcacabba648b437435d00ea85fee46a
+      secondary:
+        namespace: ingress-nginx
+        node: ubuntu
+        pod: ingress-nginx-controller-6b57d88666-zsjzb
+        timestamp: 2026-04-17 09:15:40.774841318 +0000 UTC
+    - handle_id: k8s-pod-network.371131b96aa62700465b8b52e37522158aa581a2eca689ffbf4735764f2655b6
+      secondary:
+        namespace: kube-system
+        node: ubuntu
+        pod: calico-kube-controllers-68cdf756d9-dzzpv
+        timestamp: 2026-04-17 09:15:41.577895978 +0000 UTC
+    - handle_id: k8s-pod-network.aa3ca8f0288cd60677971ae1c79fb3644dd95b14fc99fbe167ce3bfb1cc99fe7
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-application-controller-0
+        timestamp: 2026-04-17 09:15:41.719025899 +0000 UTC
+    - handle_id: k8s-pod-network.35b565a75e3c4ceec81008770fcf7731009657518b76d8a14d22003258c0461c
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-server-85c666f59b-9vfbg
+        timestamp: 2026-04-17 09:15:46.044803775 +0000 UTC
+    - handle_id: k8s-pod-network.e6882eb969110417e87b44c7aaf28f202123567bdca664e33666e58729459c64
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-repo-server-76b76cbdc-phvl9
+        timestamp: 2026-04-17 09:15:46.331357751 +0000 UTC
+    - handle_id: k8s-pod-network.26d361a669f2610e3a5de2a08edc8658553089d5d525bcb1bea64f2596a17502
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-applicationset-controller-684459d45b-zcmn8
+        timestamp: 2026-04-17 09:15:49.795655636 +0000 UTC
+    - handle_id: k8s-pod-network.0a0a0637e1ef3fd2bc4dfa1f8e85e338152a71cc3080845f851deb8634a66150
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-dex-server-796965b6dd-5dq6n
+        timestamp: 2026-04-17 09:15:50.025222026 +0000 UTC
+    - handle_id: k8s-pod-network.7198700074b8e56bbbadf6c00e8104b54c74e82edf34f295b7b830a43b03427f
+      secondary:
+        namespace: local-path-storage
+        node: ubuntu
+        pod: local-path-provisioner-94866968d-pm5hh
+        timestamp: 2026-04-17 09:15:50.350465997 +0000 UTC
+    - handle_id: k8s-pod-network.2bcb4d025bb71a09f0a9ed4b2166bd41b74af9f6e412e67aa1f673ad637e334d
+      secondary:
+        namespace: default
+        node: ubuntu
+        pod: debug
+        timestamp: 2026-04-17 09:15:51.270396031 +0000 UTC
+    - handle_id: k8s-pod-network.4ad6b24b9e14ac7990e40444252a9a72a837101f65f378f7376a02eb6078d419
+      secondary:
+        namespace: argocd
+        node: ubuntu
+        pod: argocd-redis-6664bd4d8c-wzzcj
+        timestamp: 2026-04-17 09:15:54.207966818 +0000 UTC
+    - handle_id: k8s-pod-network.635c5b6015ed01870a68dde320c767567b721ce0f47869e4756fe0cd06a1351e
+      secondary:
+        namespace: database
+        node: ubuntu
+        pod: postgres-0
+        timestamp: 2026-04-17 13:00:52.913684207 +0000 UTC
+    - handle_id: k8s-pod-network.fb9731cb8cfec290f417f8676f0365e319521c93b1180c27334baa423cc37200
+      secondary:
+        namespace: axric
+        node: ubuntu
+        pod: axric-fe-6bbdf674d9-mwbv7
+        timestamp: 2026-06-08 10:28:15.552268812 +0000 UTC
+    - handle_id: k8s-pod-network.f8665446cc55dbd7795475ec99c91e7d06ec0c3c9317755eeced27f6198467b3
+      secondary:
+        namespace: axric
+        node: ubuntu
+        pod: axric-api-77ddf6556f-mlq49
+        timestamp: 2026-06-08 10:28:17.048377625 +0000 UTC
+    - handle_id: k8s-pod-network.8efc6633a508930db6986277887b936045ca322f52d1f9774b6943ba03be6b6d
+      secondary:
+        namespace: axric
+        node: ubuntu
+        pod: axric-fe-6bbdf674d9-dfkmz
+        timestamp: 2026-06-08 10:28:26.046053659 +0000 UTC
+    - handle_id: k8s-pod-network.6e10eea629e573db0742af053ada77d53cf860017af2d95090978461946095b7
+      secondary:
+        namespace: axric
+        node: ubuntu
+        pod: axric-fe-6bbdf674d9-sfcrd
+        timestamp: 2026-06-08 10:28:29.42262185 +0000 UTC
+    - handle_id: k8s-pod-network.6a5a5a985cad4b1185dd2e48d7652368597e5d0299337e256f3ebc77124cb178
+      secondary:
+        namespace: axric
+        node: ubuntu
+        pod: axric-api-77ddf6556f-wrtwf
+        timestamp: 2026-06-08 10:28:47.732761197 +0000 UTC
+    cidr: 192.168.243.192/26
+    deleted: false
+    sequenceNumber: 1772611238178252777
+    sequenceNumberForAllocation:
+      "0": 1772611238178252381
+      "1": 1772611238178252623
+      "2": 1772611238178252699
+      "3": 1772611238178252692
+      "4": 1772611238178252682
+      "5": 1772611238178252771
+      "6": 1772611238178252693
+      "7": 1772611238178252774
+      "8": 1772611238178252768
+      "9": 1772611238178252688
+      "10": 1772611238178252769
+      "11": 1772611238178252637
+      "12": 1772611238178252632
+      "13": 1772611238178252709
+      "14": 1772611238178252631
+      "15": 1772611238178252625
+      "16": 1772611238178252630
+      "17": 1772611238178252698
+      "18": 1772611238178252626
+      "19": 1772611238178252627
+      "20": 1772611238178252633
+      "21": 1772611238178252638
+      "22": 1772611238178252747
+      "23": 1772611238178252739
+      "24": 1772611238178252639
+      "25": 1772611238178252643
+      "26": 1772611238178252741
+      "27": 1772611238178252645
+      "28": 1772611238178252642
+      "29": 1772611238178252748
+      "30": 1772611238178252648
+      "31": 1772611238178252754
+      "32": 1772611238178252764
+      "33": 1772611238178252649
+      "34": 1772611238178252744
+      "35": 1772611238178252697
+      "36": 1772611238178252758
+      "37": 1772611238178252757
+      "38": 1772611238178252762
+      "39": 1772611238178252701
+      "40": 1772611238178252718
+      "41": 1772611238178252750
+      "42": 1772611238178252759
+      "43": 1772611238178252751
+      "44": 1772611238178252714
+      "45": 1772611238178252717
+      "46": 1772611238178252707
+      "47": 1772611238178252767
+      "48": 1772611238178252712
+      "49": 1772611238178252704
+      "50": 1772611238178252708
+      "51": 1772611238178252734
+      "52": 1772611238178252719
+      "53": 1772611238178252729
+      "54": 1772611238178252737
+      "55": 1772611238178252731
+      "56": 1772611238178252722
+      "57": 1772611238178252724
+      "58": 1772611238178252728
+      "59": 1772611238178252686
+      "60": 1772611238178252691
+      "61": 1772611238178252685
+      "62": 1772611238178252738
+      "63": 1772611238178252727
+    strictAffinity: false
+    unallocated:
+    - 61
+    - 9
+    - 59
+    - 60
+    - 30
+    - 25
+    - 27
+    - 6
+    - 3
+    - 35
+    - 39
+    - 2
+    - 49
+    - 17
+    - 48
+    - 46
+    - 13
+    - 50
+    - 44
+    - 45
+    - 56
+    - 52
+    - 40
+    - 57
+    - 53
+    - 63
+    - 55
+    - 58
+    - 51
+    - 54
+    - 26
+    - 23
+    - 62
+    - 34
+    - 22
+    - 41
+    - 43
+    - 31
+    - 29
+    - 38
+    - 37
+    - 42
+    - 32
+    - 36
+kind: List
+metadata:
+  resourceVersion: ""

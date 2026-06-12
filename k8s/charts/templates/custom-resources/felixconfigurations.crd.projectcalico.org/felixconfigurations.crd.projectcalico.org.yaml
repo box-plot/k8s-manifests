@@ -1,0 +1,22 @@
+apiVersion: v1
+items:
+- apiVersion: crd.projectcalico.org/v1
+  kind: FelixConfiguration
+  metadata:
+    annotations:
+      projectcalico.org/metadata: '{"uid":"74b955ed-0ceb-4868-ae80-627ce1fca4e6","creationTimestamp":"2026-03-04T08:00:37Z"}'
+    creationTimestamp: "2026-03-04T08:00:37Z"
+    generation: 1
+    name: default
+    resourceVersion: "749"
+    uid: 934c6ee6-8fda-4125-9f36-62a4f6a90332
+  spec:
+    bpfConnectTimeLoadBalancing: TCP
+    bpfHostNetworkedNATWithoutCTLB: Enabled
+    bpfLogLevel: ""
+    floatingIPs: Disabled
+    logSeverityScreen: Info
+    reportingInterval: 0s
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,20 @@
+apiVersion: v1
+items:
+- apiVersion: crd.projectcalico.org/v1
+  kind: BlockAffinity
+  metadata:
+    annotations:
+      projectcalico.org/metadata: '{"creationTimestamp":null}'
+    creationTimestamp: "2026-03-04T08:00:38Z"
+    generation: 2
+    name: ubuntu-192-168-243-192-26
+    resourceVersion: "754"
+    uid: 8e033662-998a-4548-964c-71ec7866e207
+  spec:
+    cidr: 192.168.243.192/26
+    deleted: "false"
+    node: ubuntu
+    state: confirmed
+kind: List
+metadata:
+  resourceVersion: ""
