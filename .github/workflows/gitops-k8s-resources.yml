@@ -1,4 +1,4 @@
-name: GitOps K8s Resources to Helm
+name: Export K8s Resources to Helm
 
 on:
   workflow_dispatch:
@@ -54,20 +54,16 @@ jobs:
           sudo wget -q -O /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
           sudo chmod +x /usr/local/bin/yq
           yq --version
-
       - name: Export resources (Argo CD friendly)
         run: |
           set -euo pipefail
-
           mkdir -p k8s/charts/templates/{deployments,configmaps,secrets,services,ingresses,statefulsets,daemonsets,pvcs,rbac,custom-resources}
-
           sanitize_manifest() {
             local file="$1"
             if [ ! -s "$file" ]; then
               rm -f "$file"
               return
             fi
-
             yq eval '
               del(
                 .metadata.creationTimestamp,
@@ -90,43 +86,35 @@ jobs:
               )
             ' -i "$file"
           }
-
           export_resource() {
             local resource="$1"
             local target_dir="$2"
             local target_file="$3"
-
             for ns in $EXPORT_NAMESPACES; do
               if ! kubectl get namespace "$ns" >/dev/null 2>&1; then
                 echo "Skipping missing namespace: $ns"
                 continue
               fi
-
               mkdir -p "k8s/charts/templates/${target_dir}/${ns}"
               local output="k8s/charts/templates/${target_dir}/${ns}/${target_file}"
               local tmp_json
               tmp_json=$(mktemp)
-
               if ! kubectl get "$resource" -n "$ns" -o json > "$tmp_json" 2>/dev/null; then
                 rm -f "$tmp_json" "$output"
                 continue
               fi
-
               if [ "$(jq '.items | length' "$tmp_json")" -eq 0 ]; then
                 rm -f "$tmp_json" "$output"
                 continue
               fi
-
               jq -c '.items[]' "$tmp_json" | while read -r item; do
                 echo "$item" | yq -P e '.' -
                 echo "---"
               done > "$output"
-
               rm -f "$tmp_json"
               sanitize_manifest "$output"
             done
           }
-
           echo "====================================="
           echo "K8s Export Configuration"
           echo "====================================="
@@ -135,7 +123,6 @@ jobs:
           echo "Export cluster RBAC: $EXPORT_CLUSTER_RBAC"
           echo "Export custom resources: $EXPORT_CUSTOM_RESOURCES"
           echo "====================================="
-
           export_resource deployments deployments deployments.yaml
           export_resource statefulsets statefulsets statefulsets.yaml
           export_resource daemonsets daemonsets daemonsets.yaml
@@ -146,14 +133,12 @@ jobs:
           export_resource roles rbac roles.yaml
           export_resource rolebindings rbac rolebindings.yaml
           export_resource serviceaccounts rbac serviceaccounts.yaml
-
           if [ "$EXPORT_SECRETS" = "true" ]; then
             export_resource secrets secrets secrets.yaml
           else
             rm -rf k8s/charts/templates/secrets/*
             echo "Secret export skipped (EXPORT_SECRETS=false)"
           fi
-
           if [ "$EXPORT_CLUSTER_RBAC" = "true" ]; then
             kubectl get clusterroles -o yaml > k8s/charts/templates/rbac/clusterroles.yaml 2>/dev/null || true
             kubectl get clusterrolebindings -o yaml > k8s/charts/templates/rbac/clusterrolebindings.yaml 2>/dev/null || true
@@ -163,7 +148,6 @@ jobs:
             rm -f k8s/charts/templates/rbac/clusterroles.yaml k8s/charts/templates/rbac/clusterrolebindings.yaml
             echo "Cluster RBAC export skipped (EXPORT_CLUSTER_RBAC=false)"
           fi
-
           if [ "$EXPORT_CUSTOM_RESOURCES" = "true" ]; then
             for crd in $(kubectl get crd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
               mkdir -p "k8s/charts/templates/custom-resources/$crd"
@@ -194,109 +178,52 @@ jobs:
               email: jaronthongfoo@gmail.com
           EOF
       
-      - name: Create or update values.yaml from cluster
+      - name: Create Helm values.yaml
         run: |
-          set -euo pipefail
-          VALUES_FILE="k8s/charts/values.yaml"
-
-          # Create base values.yaml if it does not exist
-          if [ ! -f "$VALUES_FILE" ]; then
-            echo "values.yaml not found, creating from cluster..."
-            cat > "$VALUES_FILE" << 'VALEOF'
-# Helm Chart Values for K8s Resources Export
-# Generated from cluster export
-
-namespace: axric
-
-replicaCount: 1
-
-resources:
-  deployments:
-    enabled: true
-  statefulsets:
-    enabled: true
-  daemonsets:
-    enabled: true
-  configmaps:
-    enabled: true
-  secrets:
-    enabled: false
-  services:
-    enabled: true
-  ingresses:
-    enabled: true
-
-export:
-  namespaces: "axric"
-  exportSecrets: false
-  exportClusterRbac: false
-  exportCustomResources: false
-
-updateStrategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1
-    maxUnavailable: 0
-
-imagePullSecrets: []
-
-serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
-
-apps: {}
-VALEOF
-
-            # Build apps section from live deployments
-            for ns in $EXPORT_NAMESPACES; do
-              kubectl get deployments -n "$ns" -o json 2>/dev/null | \
-              jq -r '.items[] | @base64' | \
-              while read -r enc; do
-                dep=$(echo "$enc" | base64 -d)
-                dep_name=$(echo "$dep" | jq -r '.metadata.name')
-                image=$(echo "$dep" | jq -r '.spec.template.spec.containers[0].image')
-                replicas=$(echo "$dep" | jq -r '.spec.replicas // 1')
-                pull_policy=$(echo "$dep" | jq -r '.spec.template.spec.containers[0].imagePullPolicy // "IfNotPresent"')
-                port=$(echo "$dep" | jq -r '.spec.template.spec.containers[0].ports[0].containerPort // 80')
-                history=$(echo "$dep" | jq -r '.spec.revisionHistoryLimit // 3')
-
-                # Camel-case key from dep name (axric-api -> axricApi)
-                app_key=$(echo "$dep_name" | sed -E 's/-([a-z])/\U\1/g')
-
-                echo "Adding apps.${app_key}: image=${image}"
-                yq -i "
-                  .apps.${app_key}.name = \"${dep_name}\" |
-                  .apps.${app_key}.replicaCount = ${replicas} |
-                  .apps.${app_key}.revisionHistoryLimit = ${history} |
-                  .apps.${app_key}.image = \"${image}\" |
-                  .apps.${app_key}.pullPolicy = \"${pull_policy}\" |
-                  .apps.${app_key}.port = ${port} |
-                  .apps.${app_key}.resources = {}
-                " "$VALUES_FILE"
-              done
-            done
-          else
-            echo "values.yaml exists, syncing image tags from cluster..."
-            for ns in $EXPORT_NAMESPACES; do
-              kubectl get deployments -n "$ns" -o json 2>/dev/null | \
-              jq -r '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[0].image)"' | \
-              while read -r dep_name image; do
-                app_key=$(yq eval '.apps | to_entries | .[] | select(.value.name == "'"$dep_name"'") | .key' "$VALUES_FILE" 2>/dev/null || true)
-                if [ -n "$app_key" ]; then
-                  current_image=$(yq eval ".apps.${app_key}.image" "$VALUES_FILE")
-                  if [ "$current_image" != "$image" ]; then
-                    echo "Updating apps.${app_key}.image: $current_image -> $image"
-                    yq -i ".apps.${app_key}.image = \"${image}\"" "$VALUES_FILE"
-                  else
-                    echo "apps.${app_key}.image unchanged: $image"
-                  fi
-                else
-                  echo "No matching app key in values.yaml for: $dep_name (skipping)"
-                fi
-              done
-            done
-          fi
+          cat > k8s/charts/values.yaml << 'EOF'
+          # Helm Chart Values for K8s Resources Export
+          # Generated from cluster export
+          
+          replicaCount: 1
+          
+          # Resources to enable/disable
+          resources:
+            deployments:
+              enabled: true
+            statefulsets:
+              enabled: true
+            daemonsets:
+              enabled: true
+            configmaps:
+              enabled: true
+            secrets:
+              enabled: false
+            services:
+              enabled: true
+            ingresses:
+              enabled: true
+          export:
+            namespaces: "axric"
+            exportSecrets: false
+            exportClusterRbac: false
+            exportCustomResources: false
+          
+          # Update strategy
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 1
+              maxUnavailable: 0
+          
+          # Image pull secrets
+          imagePullSecrets: []
+          
+          # Service account
+          serviceAccount:
+            create: true
+            annotations: {}
+            name: ""
+          EOF
       
       - name: Create Helm helpers template
         run: |
