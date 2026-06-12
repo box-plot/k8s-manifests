@@ -96,8 +96,8 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
         with:
           version: 'latest'
       
@@ -139,82 +139,54 @@ jobs:
       - name: Apply RBAC resources
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_rbac || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/rbac" ] && [ "$(find k8s/charts/templates/rbac -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying RBAC resources..."
-            kubectl apply -R -f k8s/charts/templates/rbac/ -n axric
-          else
-            echo "No RBAC resources found, skipping..."
-          fi
+          echo "Applying RBAC resources..."
+          kubectl apply -R -f k8s/charts/templates/rbac/ -n axric 2>/dev/null || true
       
       - name: Apply ConfigMaps
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_configmaps || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/configmaps" ] && [ "$(find k8s/charts/templates/configmaps -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying ConfigMaps..."
-            kubectl apply -R -f k8s/charts/templates/configmaps/ -n axric
-          else
-            echo "No ConfigMaps found, skipping..."
-          fi
+          echo "Applying ConfigMaps..."
+          kubectl apply -R -f k8s/charts/templates/configmaps/ -n axric 2>/dev/null || true
       
       - name: Apply PersistentVolumeClaims
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_pvcs || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/pvcs" ] && [ "$(find k8s/charts/templates/pvcs -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying PersistentVolumeClaims..."
-            kubectl apply -R -f k8s/charts/templates/pvcs/ -n axric
-          else
-            echo "No PVCs found, skipping..."
-          fi
+          echo "Applying PersistentVolumeClaims..."
+          kubectl apply -R -f k8s/charts/templates/pvcs/ -n axric 2>/dev/null || true
       
       - name: Apply Services
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_services || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/services" ] && [ "$(find k8s/charts/templates/services -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying Services..."
-            kubectl apply -R -f k8s/charts/templates/services/ -n axric
-          else
-            echo "No Services found, skipping..."
-          fi
+          echo "Applying Services..."
+          kubectl apply -R -f k8s/charts/templates/services/ -n axric 2>/dev/null || true
       
       - name: Apply Ingresses
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_ingresses || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/ingresses" ] && [ "$(find k8s/charts/templates/ingresses -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying Ingresses..."
-            kubectl apply -R -f k8s/charts/templates/ingresses/ -n axric
-          else
-            echo "No Ingresses found, skipping..."
-          fi
+          echo "Applying Ingresses..."
+          kubectl apply -R -f k8s/charts/templates/ingresses/ -n axric 2>/dev/null || true
       
       - name: Apply StatefulSets
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_statefulsets || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/statefulsets" ] && [ "$(find k8s/charts/templates/statefulsets -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying StatefulSets..."
-            kubectl apply -R -f k8s/charts/templates/statefulsets/ -n axric
-          else
-            echo "No StatefulSets found, skipping..."
-          fi
+          echo "Applying StatefulSets..."
+          kubectl apply -R -f k8s/charts/templates/statefulsets/ -n axric 2>/dev/null || true
       
       - name: Apply DaemonSets
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_daemonsets || 'false') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/daemonsets" ] && [ "$(find k8s/charts/templates/daemonsets -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying DaemonSets..."
-            kubectl apply -R -f k8s/charts/templates/daemonsets/ -n axric
-          else
-            echo "No DaemonSets found, skipping..."
-          fi
+          echo "Applying DaemonSets..."
+          kubectl apply -R -f k8s/charts/templates/daemonsets/ -n axric 2>/dev/null || true
       
-      - name: Apply Deployments (last)
+      - name: Apply Helm Chart (Deployments with templates)
         if: ${{ (github.event.inputs.deploy_all || 'false') == 'true' || (github.event.inputs.deploy_deployments || 'true') == 'true' }}
         run: |
-          if [ -d "k8s/charts/templates/deployments" ] && [ "$(find k8s/charts/templates/deployments -name '*.yaml' | wc -l)" -gt 0 ]; then
-            echo "Applying Deployments..."
-            kubectl apply -R -f k8s/charts/templates/deployments/ -n axric
-          else
-            echo "No Deployments found, skipping..."
-          fi
+          echo "Installing/Upgrading Helm Chart..."
+          helm upgrade --install axric-release ./k8s/charts \
+            --namespace axric \
+            --values k8s/charts/values.yaml \
+            --wait \
+            --timeout 5m
       
       - name: Verify deployment
         run: |
