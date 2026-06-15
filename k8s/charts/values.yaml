@@ -7,7 +7,7 @@ export:
 apps:
   axric-api:
     name: axric-api
-    image: jaron197/axric-api:1.0.40
+    image: jaron197/axric-api:1.0.35
     replicaCount: 2
     port: 3000
     pullPolicy: Always
@@ -21,7 +21,7 @@ apps:
         memory: ""
   axric-fe:
     name: axric-fe
-    image: jaron197/axric-fe:1.0.40
+    image: jaron197/axric-fe:1.0.35
     replicaCount: 3
     port: 8080
     pullPolicy: IfNotPresent
