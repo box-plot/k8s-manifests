@@ -39,4 +39,37 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: my-nginx
+    meta.helm.sh/release-namespace: axric
+  labels:
+    app.kubernetes.io/instance: my-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.31.1
+    helm.sh/chart: nginx-25.0.5
+  name: my-nginx
+  namespace: axric
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: http
+      nodePort: 32025
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      nodePort: 32086
+      port: 443
+      protocol: TCP
+      targetPort: https
+  selector:
+    app.kubernetes.io/instance: my-nginx
+    app.kubernetes.io/name: nginx
+  sessionAffinity: None
+  type: LoadBalancer
+---
 
