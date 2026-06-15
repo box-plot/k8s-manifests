@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: axric-release
+  namespace: argocd
+spec:
+  destination:
+    namespace: axric
+    server: https://kubernetes.default.svc
+  source:
+    path: k8s/charts
+    repoURL: https://github.com/jaron197/k8s-manifests
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+  sources: []
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

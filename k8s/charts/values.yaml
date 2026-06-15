@@ -5,7 +5,7 @@ export:
   exportClusterRbac: false
   exportCustomResources: false
 apps:
-  axricApi:
+  axric-api:
     name: axric-api
     image: jaron197/axric-api:1.0.40
     replicaCount: 2
@@ -19,7 +19,7 @@ apps:
       limits:
         cpu: ""
         memory: ""
-  axricFe:
+  axric-fe:
     name: axric-fe
     image: jaron197/axric-fe:1.0.40
     replicaCount: 3
