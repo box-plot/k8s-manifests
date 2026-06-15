@@ -9,6 +9,7 @@ metadata:
     app: {{ $appName }}
 spec:
   replicas: {{ $app.replicaCount }}
+  revisionHistoryLimit: {{ $app.revisionHistoryLimit | default 3 }}
   selector:
     matchLabels:
       app: {{ $appName }}
@@ -26,7 +27,7 @@ spec:
     spec:
       containers:
       - name: {{ $appName }}
-        image: {{ $app.image }}
+        image: {{ $app.image.repository }}:{{ $app.image.tag }}
         imagePullPolicy: {{ $app.pullPolicy | default "IfNotPresent" }}
         ports:
         - containerPort: {{ $app.port | default 8080 }}
@@ -37,13 +38,23 @@ spec:
             name: {{ .name }}
         {{- end }}
         {{- end }}
-        {{- if $app.livenessProbe }}
+        {{- if $app.probes }}
+        {{- if $app.probes.liveness }}
         livenessProbe:
-          {{ toYaml $app.livenessProbe | nindent 20 }}
+          httpGet:
+            path: {{ $app.probes.liveness.path }}
+            port: {{ $app.port }}
+          initialDelaySeconds: {{ $app.probes.liveness.initialDelaySeconds | default 15 }}
+          periodSeconds: {{ $app.probes.liveness.periodSeconds | default 20 }}
         {{- end }}
-        {{- if $app.readinessProbe }}
+        {{- if $app.probes.readiness }}
         readinessProbe:
-          {{ toYaml $app.readinessProbe | nindent 20 }}
+          httpGet:
+            path: {{ $app.probes.readiness.path }}
+            port: {{ $app.port }}
+          initialDelaySeconds: {{ $app.probes.readiness.initialDelaySeconds | default 5 }}
+          periodSeconds: {{ $app.probes.readiness.periodSeconds | default 10 }}
+        {{- end }}
         {{- end }}
         {{- if $app.resources }}
         resources:
