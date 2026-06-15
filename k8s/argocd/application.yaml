@@ -16,6 +16,7 @@ spec:
         - values.yaml
   sources: []
   project: default
+  revisionHistoryLimit: 5
   syncPolicy:
     automated:
       prune: true
