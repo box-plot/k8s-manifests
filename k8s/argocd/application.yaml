@@ -4,6 +4,7 @@ metadata:
   name: axric-k8s-export
   namespace: argocd
 spec:
+  revisionHistoryLimit: 3
   project: default
   source:
     repoURL: https://github.com/OWNER/k8s-manifests.git

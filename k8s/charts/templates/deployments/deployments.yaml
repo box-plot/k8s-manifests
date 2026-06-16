@@ -10,6 +10,7 @@ metadata:
     {{- include "k8s-export.appLabels" (dict "name" $app.name "root" $) | nindent 4 }}
 spec:
   replicas: {{ default 1 $app.replicaCount }}
+  revisionHistoryLimit: {{ default 3 $app.revisionHistoryLimit }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $app.name }}
