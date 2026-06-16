@@ -61,18 +61,7 @@ configMaps:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
-  nginx-config:
-    enabled: false   # DISABLED (not needed for ingress-nginx TLS)
-    data:
-      default.conf: |
-        server {
-            listen 80;
-            server_name localhost;
 
-            location / {
-                proxy_pass http://axric-fe:80;
-            }
-        }
 serviceAccounts:
   create: false
   items: []
