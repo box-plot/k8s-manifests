@@ -3,7 +3,7 @@ apps:
   axric-api:
     enabled: true
     name: axric-api
-    image: jaron197/axric-api:1.0.40
+    image: jaron197/axric-api:1.0.41
     replicaCount: 3
     revisionHistoryLimit: 3
     containerPort: 3000
@@ -23,10 +23,10 @@ apps:
   axric-fe:
     enabled: true
     name: axric-fe
-    image: jaron197/axric-fe:1.0.40
+    image: jaron197/axric-fe:1.0.41
     replicaCount: 1
     revisionHistoryLimit: 3
-    containerPort: 80   # FIXED (was 8080)
+    containerPort: 80 # FIXED (was 8080)
     pullPolicy: IfNotPresent
     strategy: RollingUpdate
     envFrom:
@@ -37,7 +37,7 @@ apps:
       enabled: true
       type: ClusterIP
       port: 80
-      targetPort: 80   # FIXED
+      targetPort: 80 # FIXED
 ingress:
   enabled: true
   name: axric-ingress
@@ -51,8 +51,7 @@ ingress:
           pathType: Prefix
           serviceName: axric-fe
           servicePort: 80
-
-  tls: []   # keep empty unless you add cert-manager
+  tls: [] # keep empty unless you add cert-manager
 configMaps:
   axric-backend-config:
     enabled: true
@@ -61,7 +60,6 @@ configMaps:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
-
 serviceAccounts:
   create: false
   items: []
