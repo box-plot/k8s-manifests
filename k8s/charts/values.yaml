@@ -60,6 +60,30 @@ configMaps:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
+
+postgres:
+  enabled: true
+  name: axric-postgres
+  image: postgres:16.3
+  imagePullPolicy: IfNotPresent
+  port: 5432
+  revisionHistoryLimit: 3
+  auth:
+    database: axric
+    username: axric
+    password: P@ssw0rd#432
+    existingSecret: ""
+    secretName: axric-postgres-secret
+  persistence:
+    enabled: true
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+  storage:
+    mountPath: /var/lib/postgresql/data
+    pgdata: /var/lib/postgresql/data/pgdata
+  resources: {}
 serviceAccounts:
   create: false
   items: []

@@ -1,0 +1,74 @@
+{{- if .Values.postgres.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgres.name }}
+  namespace: {{ include "k8s-export.namespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.postgres.name "root" . "component" "database") | nindent 4 }}
+spec:
+  serviceName: {{ .Values.postgres.name }}
+  replicas: 1
+  revisionHistoryLimit: {{ default 3 .Values.postgres.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.postgres.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "k8s-export.appLabels" (dict "name" .Values.postgres.name "root" . "component" "database") | nindent 8 }}
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          imagePullPolicy: {{ .Values.postgres.imagePullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.postgres.port }}
+          env:
+            - name: PGDATA
+              value: {{ .Values.postgres.storage.pgdata }}
+          envFrom:
+            - secretRef:
+                name: {{ include "k8s-export.postgresSecretName" . }}
+          livenessProbe:
+            tcpSocket:
+              port: postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: postgres
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: postgres-data
+              mountPath: {{ .Values.postgres.storage.mountPath }}
+          {{- with .Values.postgres.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if not .Values.postgres.persistence.enabled }}
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.postgres.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          {{- include "k8s-export.appLabels" (dict "name" .Values.postgres.name "root" . "component" "database") | nindent 10 }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.postgres.persistence.accessModes | nindent 10 }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.persistence.size }}
+        {{- if .Values.postgres.persistence.storageClassName }}
+        storageClassName: {{ .Values.postgres.persistence.storageClassName }}
+        {{- end }}
+  {{- end }}
+{{- end }}

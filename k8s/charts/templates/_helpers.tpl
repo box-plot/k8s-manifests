@@ -61,5 +61,16 @@ Per-app labels to keep selectors stable for services and deployments
 {{- define "k8s-export.appLabels" -}}
 app.kubernetes.io/name: {{ .name }}
 app.kubernetes.io/instance: {{ .root.Release.Name }}
-app.kubernetes.io/component: application
+app.kubernetes.io/component: {{ default "application" .component }}
+{{- end }}
+
+{{/*
+PostgreSQL secret name helper
+*/}}
+{{- define "k8s-export.postgresSecretName" -}}
+{{- if .Values.postgres.auth.existingSecret -}}
+{{- .Values.postgres.auth.existingSecret -}}
+{{- else -}}
+{{- .Values.postgres.auth.secretName | default (printf "%s-secret" .Values.postgres.name) -}}
+{{- end -}}
 {{- end }}
