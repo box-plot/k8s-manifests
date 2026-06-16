@@ -12,7 +12,8 @@ apps:
     envFrom:
       configMaps:
         - axric-backend-config
-      secrets: []
+      secrets:
+        - axric-mail-secret
     resources: {}
     service:
       enabled: true
