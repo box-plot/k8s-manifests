@@ -1,5 +1,4 @@
 namespace: axric
-
 apps:
   axric-api:
     enabled: true
@@ -20,14 +19,13 @@ apps:
       type: ClusterIP
       port: 3000
       targetPort: 3000
-
   axric-fe:
     enabled: true
     name: axric-fe
     image: jaron197/axric-fe:1.0.39
     replicaCount: 1
     revisionHistoryLimit: 3
-    containerPort: 8080
+    containerPort: 80   # FIXED (was 8080)
     pullPolicy: IfNotPresent
     strategy: RollingUpdate
     envFrom:
@@ -38,13 +36,13 @@ apps:
       enabled: true
       type: ClusterIP
       port: 80
-      targetPort: 8080
-
+      targetPort: 80   # FIXED
 ingress:
   enabled: true
   name: axric-ingress
   className: nginx
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     - host: axrique.com
       paths:
@@ -52,8 +50,8 @@ ingress:
           pathType: Prefix
           serviceName: axric-fe
           servicePort: 80
-  tls: []
 
+  tls: []   # keep empty unless you add cert-manager
 configMaps:
   axric-backend-config:
     enabled: true
@@ -62,31 +60,24 @@ configMaps:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
-
   nginx-config:
-    enabled: true
+    enabled: false   # DISABLED (not needed for ingress-nginx TLS)
     data:
       default.conf: |
         server {
-            listen 443 ssl;
+            listen 80;
             server_name localhost;
-
-            ssl_certificate /etc/nginx/certs/tls.crt;
-            ssl_certificate_key /etc/nginx/certs/tls.key;
 
             location / {
                 proxy_pass http://axric-fe:80;
             }
         }
-
 serviceAccounts:
   create: false
   items: []
-
 persistence:
   enabled: false
   claims: []
-
 secrets:
   enabled: false
   items: []
