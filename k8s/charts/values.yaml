@@ -44,8 +44,7 @@ ingress:
   enabled: true
   name: axric-ingress
   className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  annotations: {}
   hosts:
     - host: axrique.com
       paths:
@@ -53,10 +52,7 @@ ingress:
           pathType: Prefix
           serviceName: axric-fe
           servicePort: 80
-  tls:
-    - hosts:
-        - axrique.com
-      secretName: axric-fe-tls
+  tls: []
 
 configMaps:
   axric-backend-config:
