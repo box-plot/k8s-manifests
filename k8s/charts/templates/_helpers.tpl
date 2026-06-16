@@ -74,3 +74,10 @@ PostgreSQL secret name helper
 {{- .Values.postgres.auth.secretName | default (printf "%s-secret" .Values.postgres.name) -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+PostgreSQL namespace helper
+*/}}
+{{- define "k8s-export.postgresNamespace" -}}
+{{- default (include "k8s-export.namespace" .) .Values.postgres.namespace -}}
+{{- end }}

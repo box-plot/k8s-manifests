@@ -64,6 +64,8 @@ configMaps:
 postgres:
   enabled: true
   name: axric-postgres
+  namespace: axric-db
+  createNamespace: true
   image: postgres:16.3
   imagePullPolicy: IfNotPresent
   port: 5432

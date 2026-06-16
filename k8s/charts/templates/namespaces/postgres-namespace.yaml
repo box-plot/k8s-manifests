@@ -1,0 +1,9 @@
+{{- if and .Values.postgres.enabled .Values.postgres.createNamespace .Values.postgres.namespace (ne .Values.postgres.namespace .Values.namespace) }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.postgres.namespace }}
+  labels:
+    {{- include "k8s-export.labels" . | nindent 4 }}
+{{- end }}
