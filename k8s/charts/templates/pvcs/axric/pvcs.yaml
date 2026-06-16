@@ -1,30 +1,22 @@
+{{- if .Values.persistence.enabled }}
+{{- range .Values.persistence.claims }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  annotations:
-    meta.helm.sh/release-name: axric-release
-    meta.helm.sh/release-namespace: axric
-    pv.kubernetes.io/bind-completed: "yes"
-    pv.kubernetes.io/bound-by-controller: "yes"
-    volume.beta.kubernetes.io/storage-provisioner: rancher.io/local-path
-    volume.kubernetes.io/selected-node: ubuntu
-    volume.kubernetes.io/storage-provisioner: rancher.io/local-path
-  finalizers:
-    - kubernetes.io/pvc-protection
+  name: {{ .name }}
+  namespace: {{ include "k8s-export.namespace" $ }}
   labels:
-    app.kubernetes.io/component: primary
-    app.kubernetes.io/instance: postgres
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: postgresql
-  name: data-postgres-postgresql-0
-  namespace: axric
+    {{- include "k8s-export.labels" $ | nindent 4 }}
 spec:
   accessModes:
-    - ReadWriteOnce
+    {{- toYaml .accessModes | nindent 4 }}
   resources:
     requests:
-      storage: 8Gi
-  storageClassName: local-path
-  volumeMode: Filesystem
----
+      storage: {{ .size }}
+  {{- if .storageClassName }}
+  storageClassName: {{ .storageClassName }}
+  {{- end }}
+{{- end }}
+{{- end }}
 

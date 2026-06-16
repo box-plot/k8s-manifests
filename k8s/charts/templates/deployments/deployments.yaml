@@ -1,17 +1,19 @@
 {{- range $appName, $app := .Values.apps }}
+{{- if (default true $app.enabled) }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $app.name }}
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ include "k8s-export.namespace" $ }}
   labels:
-    app: {{ $appName }}
+    {{- include "k8s-export.appLabels" (dict "name" $app.name "root" $) | nindent 4 }}
 spec:
-  replicas: {{ $app.replicaCount }}
+  replicas: {{ default 1 $app.replicaCount }}
   selector:
     matchLabels:
-      app: {{ $appName }}
+      app.kubernetes.io/name: {{ $app.name }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
   strategy:
     type: {{ $app.strategy | default "RollingUpdate" }}
     {{- if eq ($app.strategy | default "RollingUpdate") "RollingUpdate" }}
@@ -22,19 +24,23 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ $appName }}
+        {{- include "k8s-export.appLabels" (dict "name" $app.name "root" $) | nindent 8 }}
     spec:
       containers:
-      - name: {{ $appName }}
+      - name: {{ $app.name }}
         image: {{ $app.image }}
         imagePullPolicy: {{ $app.pullPolicy | default "IfNotPresent" }}
         ports:
-        - containerPort: {{ $app.port | default 8080 }}
-        {{- if $app.envFrom }}
+        - containerPort: {{ $app.containerPort | default 8080 }}
+        {{- if or $app.envFrom.configMaps $app.envFrom.secrets }}
         envFrom:
-        {{- range $app.envFrom }}
+        {{- range $app.envFrom.configMaps }}
         - configMapRef:
-            name: {{ .name }}
+            name: {{ . }}
+        {{- end }}
+        {{- range $app.envFrom.secrets }}
+        - secretRef:
+            name: {{ . }}
         {{- end }}
         {{- end }}
         {{- if $app.livenessProbe }}
@@ -45,17 +51,9 @@ spec:
         readinessProbe:
           {{ toYaml $app.readinessProbe | nindent 20 }}
         {{- end }}
-        {{- if $app.resources }}
+        {{- with $app.resources }}
         resources:
-          {{- if $app.resources.requests }}
-          requests:
-            cpu: {{ $app.resources.requests.cpu }}
-            memory: {{ $app.resources.requests.memory }}
-          {{- end }}
-          {{- if $app.resources.limits }}
-          limits:
-            cpu: {{ $app.resources.limits.cpu }}
-            memory: {{ $app.resources.limits.memory }}
-          {{- end }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
+{{- end }}
 {{- end }}

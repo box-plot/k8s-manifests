@@ -47,3 +47,19 @@ Selector labels
 app.kubernetes.io/name: {{ include "k8s-export.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Target namespace helper
+*/}}
+{{- define "k8s-export.namespace" -}}
+{{- default .Release.Namespace .Values.namespace -}}
+{{- end }}
+
+{{/*
+Per-app labels to keep selectors stable for services and deployments
+*/}}
+{{- define "k8s-export.appLabels" -}}
+app.kubernetes.io/name: {{ .name }}
+app.kubernetes.io/instance: {{ .root.Release.Name }}
+app.kubernetes.io/component: application
+{{- end }}

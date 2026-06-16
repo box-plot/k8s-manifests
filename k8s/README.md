@@ -1,6 +1,6 @@
 # Kubernetes Resources Export
 
-This directory contains exported Kubernetes resources as a Helm chart.
+This directory contains GitOps-ready Kubernetes resources packaged as a Helm chart for Argo CD.
 
 ## Directory Structure
 
@@ -22,7 +22,18 @@ This directory contains exported Kubernetes resources as a Helm chart.
 - `rbac/` - RBAC resources (Roles, RoleBindings, etc.)
 - `custom-resources/` - Custom Resource Definitions and instances
 
-## Installation
+## Argo CD Deployment (Recommended)
+
+1. Update `repoURL` in `k8s/argocd/application.yaml` to your repository URL.
+2. Apply the Argo CD application:
+
+```bash
+kubectl apply -f k8s/argocd/application.yaml
+```
+
+3. Argo CD will sync and continuously reconcile the chart from `k8s/charts`.
+
+## Helm Deployment (Manual)
 
 ### Using Helm
 
@@ -37,7 +48,7 @@ helm upgrade k8s-export ./charts
 helm install k8s-export ./charts -f custom-values.yaml
 ```
 
-### Manual deployment
+### Manual kubectl deployment
 
 ```bash
 # Apply exported resources directly
@@ -66,8 +77,8 @@ To trigger an export manually:
 
 ## Notes
 
-- This workflow removes runtime metadata for GitOps-friendly diffs
-- Secrets are NOT exported by default (`EXPORT_SECRETS=false`)
-- Cluster RBAC and custom resources are disabled by default
-- Set workflow env vars to enable additional resource exports
+- Templates are refactored to remove cluster-generated runtime metadata (UIDs, resourceVersions, bind annotations).
+- Cluster-managed resources such as `kube-root-ca.crt` are excluded from GitOps templates.
+- Secrets are optional and disabled by default (`secrets.enabled=false`) to support External Secrets / sealed workflows.
+- ServiceAccounts and PVCs are optional and fully values-driven.
 

@@ -1,12 +1,12 @@
 apiVersion: v2
-name: k8s-export
-description: Exported Kubernetes resources as Helm chart
+name: k8s-helm-chart
+description: Kubernetes resources as Helm chart
 type: application
 version: 1.0.0
 appVersion: "1.0"
 keywords:
   - kubernetes
-  - export
+  - helm
   - manifests
 maintainers:
   - name: DevOps Team

@@ -1,35 +1,94 @@
 namespace: axric
-export:
-  namespaces: "axric"
-  exportSecrets: false
-  exportClusterRbac: false
-  exportCustomResources: false
+
 apps:
-  axricApi:
+  axric-api:
+    enabled: true
     name: axric-api
     image: jaron197/axric-api:1.0.39
     replicaCount: 2
-    port: 3000
-    pullPolicy: Always
+    containerPort: 3000
+    pullPolicy: IfNotPresent
     strategy: RollingUpdate
-    resources:
-      requests:
-        cpu: ""
-        memory: ""
-      limits:
-        cpu: ""
-        memory: ""
-  axricFe:
+    envFrom:
+      configMaps:
+        - axric-backend-config
+      secrets: []
+    resources: {}
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 3000
+      targetPort: 3000
+
+  axric-fe:
+    enabled: true
     name: axric-fe
     image: jaron197/axric-fe:1.0.39
     replicaCount: 3
-    port: 8080
+    containerPort: 8080
     pullPolicy: IfNotPresent
     strategy: RollingUpdate
-    resources:
-      requests:
-        cpu: ""
-        memory: ""
-      limits:
-        cpu: ""
-        memory: ""
+    envFrom:
+      configMaps: []
+      secrets: []
+    resources: {}
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 80
+      targetPort: 8080
+
+ingress:
+  enabled: true
+  name: axric-ingress
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: axrique.com
+      paths:
+        - path: /
+          pathType: Prefix
+          serviceName: axric-fe
+          servicePort: 80
+  tls:
+    - hosts:
+        - axrique.com
+      secretName: axric-fe-tls
+
+configMaps:
+  axric-backend-config:
+    enabled: true
+    data:
+      ALLOWED_ORIGIN: https://axrique.com
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: "587"
+      SERVER_PORT: "3000"
+
+  nginx-config:
+    enabled: true
+    data:
+      default.conf: |
+        server {
+            listen 443 ssl;
+            server_name localhost;
+
+            ssl_certificate /etc/nginx/certs/tls.crt;
+            ssl_certificate_key /etc/nginx/certs/tls.key;
+
+            location / {
+                proxy_pass http://axric-fe:80;
+            }
+        }
+
+serviceAccounts:
+  create: false
+  items: []
+
+persistence:
+  enabled: false
+  claims: []
+
+secrets:
+  enabled: false
+  items: []
