@@ -38,6 +38,24 @@ apps:
       type: ClusterIP
       port: 80
       targetPort: 80 # FIXED
+  axricIngress:
+    enabled: true
+    name: axric-ingress
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: axrique.com
+        paths:
+          - path: /api
+            pathType: Prefix
+            serviceName: axric-api
+            servicePort: 3000
+          - path: /
+            pathType: Prefix
+            serviceName: axric-fe
+            servicePort: 80
+    tls: []
   threadlyBackend:
     enabled: true
     name: threadly-backend
@@ -60,16 +78,16 @@ apps:
       enabled: true
       name: threadly-backend-secret
       stringData:
-        PG_USER : "axricuser"
+        PG_USER: "axricuser"
         PG_PASS: "6u9WLtpk5u"
         PG_DB_NAME: "axricdb"
-    config: {}
     service:
       type: ClusterIP
       port: 1080
     ingress:
       enabled: true
-      host: api.threadly.com
+      host: axrique.com
+      path: /api/v1
       tls: false
       tlsSecret: threadly-tls
     resources:
@@ -82,20 +100,6 @@ apps:
     env: []
     config: {}
     nodeSelector: {}
-ingress:
-  enabled: true
-  name: axric-ingress
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  hosts:
-    - host: axrique.com
-      paths:
-        - path: /
-          pathType: Prefix
-          serviceName: axric-fe
-          servicePort: 80
-  tls: [] # keep empty unless you add cert-manager
 configMaps:
   axric-backend-config:
     enabled: true
