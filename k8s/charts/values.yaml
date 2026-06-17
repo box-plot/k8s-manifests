@@ -118,6 +118,7 @@ configMaps:
       enabled: true
       data:
         NODE_ENV: "production"
+        HOST: "0.0.0.0"
         NODE_TLS_REJECT_UNAUTHORIZED: "0"
         PG_SSL_MODE: "disable"
         PG_REJECTUNAUTHORIZED: "false"
