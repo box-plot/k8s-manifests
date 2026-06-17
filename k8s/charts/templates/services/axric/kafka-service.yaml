@@ -17,8 +17,15 @@ spec:
     app.kubernetes.io/name: {{ .Values.kafka.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
-    - name: kafka
+    - name: kafka-internal
       protocol: TCP
       port: {{ .Values.kafka.service.port | default .Values.kafka.port | default 9092 }}
       targetPort: {{ .Values.kafka.service.targetPort | default .Values.kafka.port | default 9092 }}
+    {{- if and (eq (.Values.kafka.service.type | default "ClusterIP") "NodePort") .Values.kafka.service.externalPort }}
+    - name: kafka-external
+      protocol: TCP
+      port: {{ .Values.kafka.service.externalPort | default 30092 }}
+      targetPort: {{ .Values.kafka.service.externalTargetPort | default 30092 }}
+      nodePort: {{ .Values.kafka.service.externalPort | default 30092 }}
+    {{- end }}
 {{- end }}
