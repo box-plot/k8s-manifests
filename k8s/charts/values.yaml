@@ -76,9 +76,9 @@ postgres:
   port: 5432
   revisionHistoryLimit: 3
   auth:
-    database: axric
-    username: axric
-    password: P@ssw0rd#432
+    database: axricdb
+    username: axricuser
+    password: 6u9WLtpk5u
     existingSecret: ""
     secretName: axric-postgres-secret
   persistence:
