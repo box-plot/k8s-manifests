@@ -1,11 +1,11 @@
-{{- range $name, $cm := .Values.configMaps.threadly }}
+{{- range $name, $cm := $.Values.configMaps.threadly }}
 {{- if (default true $cm.enabled) }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ $name }}
-  namespace: {{ $cm.namespace | default .Values.apps.threadlyBackend.namespace }}
+  namespace: {{ $cm.namespace | default $.Values.apps.threadlyBackend.namespace }}
   labels:
     {{- include "k8s-export.labels" $ | nindent 4 }}
 data:
