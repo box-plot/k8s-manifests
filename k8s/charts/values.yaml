@@ -61,14 +61,6 @@ apps:
       name: threadly-backend-secret
       stringData:
         PG_PASSWORD: "6u9WLtpk5u"
-    envFile:
-      enabled: true
-      name: threadly-backend-env-file
-      mountPath: /app/.env
-      content: |
-        NODE_TLS_REJECT_UNAUTHORIZED=0
-        PG_SSL_MODE=disable
-        PG_REJECTUNAUTHORIZED=false
     service:
       type: ClusterIP
       port: 1080

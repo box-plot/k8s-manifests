@@ -69,21 +69,10 @@ spec:
         - name: app-config
           mountPath: /app/config
           readOnly: true
-        {{- if .Values.apps.threadlyBackend.envFile.enabled }}
-        - name: env-file
-          mountPath: {{ .Values.apps.threadlyBackend.envFile.mountPath | default "/app/app/config/env/.env" }}
-          subPath: .env
-          readOnly: true
-        {{- end }}
       volumes:
       - name: app-config
         configMap:
           name: {{ .Values.apps.threadlyBackend.name }}-config
-      {{- if .Values.apps.threadlyBackend.envFile.enabled }}
-      - name: env-file
-        configMap:
-          name: {{ .Values.apps.threadlyBackend.envFile.name | default "threadly-backend-env-file" }}
-      {{- end }}
       {{- with .Values.apps.threadlyBackend.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
