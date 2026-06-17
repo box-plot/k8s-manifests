@@ -102,7 +102,6 @@ configMaps:
   threadly:
     threadly-backend-config:
       enabled: true
-      namespace: threadly-backend-uat
       data:
         NODE_ENV: "local"
         PORT: "1080"
