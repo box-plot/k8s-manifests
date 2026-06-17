@@ -1,0 +1,28 @@
+{{- if .Values.apps.threadlyBackend.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.apps.threadlyBackend.name }}
+  namespace: {{ .Values.namespace.default }}
+  labels:
+    app: {{ .Values.apps.threadlyBackend.name }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.apps.threadlyBackend.ingress.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.apps.threadlyBackend.name }}
+            port:
+              number: {{ .Values.apps.threadlyBackend.service.port }}
+  {{- if .Values.apps.threadlyBackend.ingress.tls }}
+  tls:
+  - hosts:
+    - {{ .Values.apps.threadlyBackend.ingress.host }}
+    secretName: {{ .Values.apps.threadlyBackend.ingress.tlsSecret }}
+  {{- end }}
+{{- end }}

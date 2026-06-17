@@ -38,6 +38,38 @@ apps:
       type: ClusterIP
       port: 80
       targetPort: 80 # FIXED
+  threadlyBackend:
+    enabled: true
+    name: threadly-backend
+    version: "1.0.1"
+    replicas: 1
+    port: 1080
+    image:
+      repository: jaron197/threadly-backend
+      tag: "1.0.1"
+      pullPolicy: IfNotPresent
+    envFrom:
+      configMaps:
+        - threadly-backend-config
+      secrets: []
+    service:
+      type: ClusterIP
+      port: 1080
+    ingress:
+      enabled: true
+      host: api.threadly.com
+      tls: false
+      tlsSecret: threadly-tls
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    env: []
+    config: {}
+    nodeSelector: {}
 ingress:
   enabled: true
   name: axric-ingress

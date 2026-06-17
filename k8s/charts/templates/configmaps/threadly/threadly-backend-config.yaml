@@ -1,0 +1,58 @@
+{{- if .Values.apps.threadlyBackend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.apps.threadlyBackend.name }}-config
+  namespace: {{ .Values.namespace.default }}
+  labels:
+    app: {{ .Values.apps.threadlyBackend.name }}
+data:
+  NODE_ENV: "local"
+  PORT: "1080"
+  HTTPS_CERT_PATH: "./certs/cert.pem"
+  HTTPS_KEY_PATH: "./certs/key.pem"
+  PG_HOST: "43.229.133.190"
+  PG_PORT: "30501"
+  PG_DB_NAME: "axricdb"
+  PG_USER: "axricuser"
+  PG_PASS: "6u9WLtpk5u"
+  DATABASE_URL: "postgresql://axricuser:6u9WLtpk5u@43.229.133.190:30501/axricdb?schema=threadly"
+  JWT_SECRET: "threadly_super_secret_key"
+  JWT_EXPIRES_IN: "7d"
+  LINE_API_BASE_URL: "https://api.line.me/v2/bot"
+  LINE_BOT_INFO_URL: "https://api.line.me/v2/bot/info"
+  LINE_CHANNEL_ACCESS_TOKEN: "X1j5+Tvi3SYRl7Hca4Wrzn/2VH1CcQsldDiDiXV3YQoxsbKdH3kf9jloyY31xM88ZiERA6uJhBzAMeUM/VfNbQctfDwuwDbZ7hrtbTyD5HhMZWmJ4tZXy3oQFnT5KEnlyRxHaJV5DRhYXaiBoiuVlQdB04t89/1O/w1cDnyilFU="
+  LINE_CHANNEL_SECRET: "b654b40b9204ae8d863e45ea52f0e632"
+  TIKTOK_CLIENT_KEY: "sbaw18dzcdrvaeu8tz"
+  TIKTOK_CLIENT_SECRET: "DZxygYzaYxS8iaGxvpEr7AfrtCbwgMuC"
+  TIKTOK_REDIRECT_URI: "https://5fab-2405-9800-b651-89d7-4c17-1b69-7408-abfb.ngrok-free.app/tiktok/auth/callback"
+  TIKTOK_API: "https://open.tiktokapis.com"
+  TIKTOK_AUTH_URL: "https://www.tiktok.com/v2/auth/authorize/"
+  FACEBOOK_API_BASE_URL: "https://graph.facebook.com/v18.0/"
+  FACEBOOK_APP_ID: "123456789012345"
+  FACEBOOK_APP_SECRET: "abcdef1234567890abcdef1234567890"
+  FACEBOOK_VERIFY_TOKEN: "DATA2026"
+  FACEBOOK_PAGE_ACCESS_TOKEN: "EAAMpZC0sgx98BQ7xw4V1O37qzsl3szKsIudKYHna7cEx1vOWnZAdU3wBZAqL5Rk6w4TZCPZC8hzme67Q0NYa4P1TaIN3FlJ0N4WJAwYiO6aqpKxngCPha8SgvN6eyTspC5aB56FwZC42KFPeY8iggPZAHZBM9PCT5ZAn9azJw7IgNn11YFlhZChkGK7W7Uqg4zRdQOBHHf"
+  REDIS_HOST: "localhost"
+  REDIS_PORT: "6379"
+  REDIS_CACHE_TTL: "600"
+  REDIS_ENABLED: "false"
+  KAFKA_ENABLED: "true"
+  KAFKA_BROKERS: "43.229.133.190:30092"
+  KAFKA_CLIENT_ID: "axric-api-dev"
+  KAFKA_GROUP_ID: "axric-group-dev"
+  KAFKA_CHAT_TOPIC: "chat"
+  APP_URL: "http://localhost:1080"
+  INVITE_EXPIRES_IN_DAYS: "7"
+  EMAIL_USER: "Jaronthongfoo@gmail.com"
+  EMAIL_PASS: "epcp pidj qzfh gxzk"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "465"
+  OPENAI_API_KEY: "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"
+  OPENAI_API_BASE_URL: "https://api.openai.com/v1"
+  GEMINI_API_KEY: "AIzaSyDE0s_9x2HLiIePh3iC1fjmItvb9OoxeMw"
+  PINECONE_API_KEY: "pcsk_3S4quM_9RhS5nTHgbj4U2TADq9iimLaYyVGJ7mPdQcdZ9sMc7BQjPkavWDAydyyFpgJ8Ac"
+  PINECONE_INDEX_NAME: "threadly"
+  GEMINI_API_MODEL: "gemini-2.5-flash"
+  GEMINI_API_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+{{- end }}
