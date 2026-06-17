@@ -1,9 +1,8 @@
 {{- if .Values.apps.threadlyBackend.enabled }}
 apiVersion: v1
-kind: ServiceAccount
+kind: Namespace
 metadata:
-  name: {{ .Values.apps.threadlyBackend.name }}
-  namespace: {{ .Values.apps.threadlyBackend.namespace }}
+  name: {{ .Values.apps.threadlyBackend.namespace }}
   labels:
     app: {{ .Values.apps.threadlyBackend.name }}
 {{- end }}

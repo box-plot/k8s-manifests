@@ -3,7 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.apps.threadlyBackend.name }}
-  namespace: {{ .Values.namespace.default }}
+  namespace: {{ .Values.apps.threadlyBackend.namespace }}
   labels:
     app: {{ .Values.apps.threadlyBackend.name }}
 spec:

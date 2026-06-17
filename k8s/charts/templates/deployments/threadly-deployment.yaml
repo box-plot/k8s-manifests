@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.apps.threadlyBackend.name }}
-  namespace: {{ .Values.namespace.default }}
+  namespace: {{ .Values.apps.threadlyBackend.namespace }}
   labels:
     app: {{ .Values.apps.threadlyBackend.name }}
     version: {{ .Values.apps.threadlyBackend.version }}

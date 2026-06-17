@@ -1,0 +1,25 @@
+# Secrets - DO NOT COMMIT
+k8s/charts/templates/secrets/**/*.yaml
+**/*-secret.yaml
+**/secrets/*.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+dist/
+*.log
