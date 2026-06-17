@@ -58,7 +58,8 @@ apps:
     secret:
       enabled: true
       name: threadly-backend-secret
-      stringData: {}
+      stringData:
+        PG_PASSWORD: "6u9WLtpk5u"
     envFile:
       enabled: true
       name: threadly-backend-env-file
@@ -123,6 +124,9 @@ configMaps:
         PG_DB_NAME: "axricdb"
         PG_USER: "axricuser"
         PG_SSL: "false"
+        PGSSLMODE: "disable"
+        DB_SSL: "false"
+        DATABASE_SSL: "false"
         JWT_EXPIRES_IN: "7d"
         LINE_API_BASE_URL: "https://api.line.me/v2/bot"
         LINE_BOT_INFO_URL: "https://api.line.me/v2/bot/info"
