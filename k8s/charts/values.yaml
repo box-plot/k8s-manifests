@@ -60,11 +60,10 @@ apps:
       enabled: true
       name: threadly-backend-secret
       stringData:
-        PG_PASSWORD: "6u9WLtpk5u"
-        DB_PASSWORD: "6u9WLtpk5u"
-        DATABASE_PASSWORD: "6u9WLtpk5u"
-        POSTGRES_PASSWORD: "6u9WLtpk5u"
+        PG_USER : "axricuser"
         PG_PASS: "6u9WLtpk5u"
+        PG_DB_NAME: "axricdb"
+    config: {}
     service:
       type: ClusterIP
       port: 1080
@@ -125,6 +124,7 @@ configMaps:
         PG_PORT: "5432"
         PG_DB_NAME: "axricdb"
         PG_USER: "axricuser"
+        PG_PASS: "6u9WLtpk5u"
         PG_SSL: "false"
         PGSSLMODE: "disable"
         sslmode: "disable"

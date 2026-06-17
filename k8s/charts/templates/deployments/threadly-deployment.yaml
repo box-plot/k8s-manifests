@@ -42,32 +42,6 @@ spec:
         - secretRef:
             name: {{ . }}
         {{- end }}
-        env:
-        - name: PG_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.apps.threadlyBackend.secret.name | default "threadly-backend-secret" }}
-              key: PG_PASSWORD
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.apps.threadlyBackend.secret.name | default "threadly-backend-secret" }}
-              key: DB_PASSWORD
-        - name: DATABASE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.apps.threadlyBackend.secret.name | default "threadly-backend-secret" }}
-              key: DATABASE_PASSWORD
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.apps.threadlyBackend.secret.name | default "threadly-backend-secret" }}
-              key: POSTGRES_PASSWORD
-        - name: PG_PASS
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.apps.threadlyBackend.secret.name | default "threadly-backend-secret" }}
-              key: PG_PASS
         livenessProbe:
           httpGet:
             path: /health
