@@ -111,8 +111,7 @@ configMaps:
       KAFKA_CLIENT_ID: axric-api-prod-6e0d9a3f2c7b18e4
       KAFKA_GROUP_ID: axric-group
       KAFKA_CHAT_TOPIC: chat-topic
-  threadly:
-    threadly-backend-config:
+  threadly-backend-config:
       enabled: true
       data:
         NODE_ENV: "production"
@@ -155,6 +154,7 @@ configMaps:
         GEMINI_API_MODEL: "gemini-2.5-flash"
         GEMINI_API_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
         PINECONE_INDEX_NAME: "threadly"
+    
 postgres:
   enabled: true
   name: axric-postgres
