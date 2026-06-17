@@ -49,8 +49,7 @@ apps:
       repository: jaron197/threadly-backend
       tag: "1.0.1"
       pullPolicy: IfNotPresent
-      pullSecrets:
-        - dockerhub-threadly
+      pullSecrets: []
     envFrom:
       configMaps:
         - threadly-backend-config
