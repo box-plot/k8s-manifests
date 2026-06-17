@@ -25,29 +25,25 @@ spec:
           image: {{ .Values.kafka.image }}
           imagePullPolicy: {{ .Values.kafka.imagePullPolicy | default "IfNotPresent" }}
           ports:
-            - name: kafka-internal
+            - name: kafka
               containerPort: {{ .Values.kafka.port | default 9092 }}
-            {{- if .Values.kafka.externalPort }}
-            - name: kafka-external
-              containerPort: {{ .Values.kafka.externalPort | default 30092 }}
-            {{- end }}
           {{- with .Values.kafka.env }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           livenessProbe:
             tcpSocket:
-              port: kafka-internal
+              port: kafka
             initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             tcpSocket:
-              port: kafka-internal
+              port: kafka
             initialDelaySeconds: 30
             periodSeconds: 5
           startupProbe:
             tcpSocket:
-              port: kafka-internal
+              port: kafka
             failureThreshold: 30
             periodSeconds: 10
           volumeMounts:
