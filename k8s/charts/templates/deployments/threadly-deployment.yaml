@@ -19,19 +19,13 @@ spec:
         version: {{ .Values.apps.threadlyBackend.version }}
     spec:
       serviceAccountName: {{ .Values.apps.threadlyBackend.name }}
-      {{- with .Values.apps.threadlyBackend.image.pullSecrets }}
-      imagePullSecrets:
-      {{- range . }}
-      - name: {{ . }}
-      {{- end }}
-      {{- end }}
       containers:
       - name: {{ .Values.apps.threadlyBackend.name }}
-        image: "{{ .Values.apps.threadlyBackend.image.repository }}:{{ .Values.apps.threadlyBackend.image.tag }}"
-        imagePullPolicy: {{ .Values.apps.threadlyBackend.image.pullPolicy }}
+        image: {{ .Values.apps.threadlyBackend.image }}
+        imagePullPolicy: {{ .Values.apps.threadlyBackend.pullPolicy | default "IfNotPresent" }}
         ports:
         - name: http
-          containerPort: {{ .Values.apps.threadlyBackend.port }}
+          containerPort: {{ .Values.apps.threadlyBackend.containerPort | default 1080 }}
           protocol: TCP
         envFrom:
         {{- range .Values.apps.threadlyBackend.envFrom.configMaps }}

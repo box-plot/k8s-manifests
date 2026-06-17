@@ -60,15 +60,11 @@ apps:
     enabled: true
     name: threadly-backend
     namespace: threadly-backend
-    version: "1.0.1"
+    image: jaron197/threadly-backend:1.0.3
     replicaCount: 1
-    revisionHistoryLimit: 1
-    port: 1080
-    image:
-      repository: jaron197/threadly-backend
-      tag: "1.0.3"
-      pullPolicy: IfNotPresent
-      pullSecrets: []
+    revisionHistoryLimit: 3
+    containerPort: 1080
+    pullPolicy: IfNotPresent
     envFrom:
       configMaps:
         - threadly-backend-config
@@ -82,8 +78,10 @@ apps:
         PG_PASS: "6u9WLtpk5u"
         PG_DB_NAME: "axricdb"
     service:
+      enabled: true
       type: ClusterIP
       port: 1080
+      targetPort: 1080
     ingress:
       enabled: true
       host: axrique.com
