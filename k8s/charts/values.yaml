@@ -86,7 +86,7 @@ postgres:
     size: 8Gi
     accessModes:
       - ReadWriteOnce
-    storageClassName: ""
+    storageClassName: local-path
   storage:
     mountPath: /var/lib/postgresql/data
     pgdata: /var/lib/postgresql/data/pgdata
