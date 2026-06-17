@@ -1,0 +1,72 @@
+{{- if .Values.kafka.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.kafka.name }}
+  namespace: {{ include "k8s-export.kafkaNamespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.kafka.name "root" . "component" "messaging") | nindent 4 }}
+spec:
+  serviceName: {{ .Values.kafka.name }}
+  replicas: {{ .Values.kafka.replicas | default 1 }}
+  revisionHistoryLimit: {{ .Values.kafka.revisionHistoryLimit | default 3 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.kafka.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "k8s-export.appLabels" (dict "name" .Values.kafka.name "root" . "component" "messaging") | nindent 8 }}
+    spec:
+      containers:
+        - name: kafka
+          image: {{ .Values.kafka.image }}
+          imagePullPolicy: {{ .Values.kafka.imagePullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: kafka
+              containerPort: {{ .Values.kafka.port | default 9092 }}
+          {{- with .Values.kafka.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: kafka
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: kafka
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: kafka-data
+              mountPath: {{ .Values.kafka.storage.mountPath | default "/bitnami/kafka" }}
+          {{- with .Values.kafka.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if not .Values.kafka.persistence.enabled }}
+      volumes:
+        - name: kafka-data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.kafka.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+        labels:
+          {{- include "k8s-export.appLabels" (dict "name" .Values.kafka.name "root" . "component" "messaging") | nindent 10 }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.kafka.persistence.accessModes | nindent 10 }}
+        resources:
+          requests:
+            storage: {{ .Values.kafka.persistence.size }}
+        {{- if .Values.kafka.persistence.storageClassName }}
+        storageClassName: {{ .Values.kafka.persistence.storageClassName }}
+        {{- end }}
+  {{- end }}
+{{- end }}

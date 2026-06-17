@@ -1,0 +1,24 @@
+{{- if and .Values.kafka.enabled (default true .Values.kafka.service.enabled) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafka.name }}
+  namespace: {{ include "k8s-export.kafkaNamespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.kafka.name "root" . "component" "messaging") | nindent 4 }}
+spec:
+  {{- if and (eq (.Values.kafka.service.type | default "ClusterIP") "ClusterIP") (default true .Values.kafka.service.headless) }}
+  clusterIP: None
+  publishNotReadyAddresses: true
+  {{- end }}
+  type: {{ .Values.kafka.service.type | default "ClusterIP" }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.kafka.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: kafka
+      protocol: TCP
+      port: {{ .Values.kafka.service.port | default .Values.kafka.port | default 9092 }}
+      targetPort: {{ .Values.kafka.service.targetPort | default .Values.kafka.port | default 9092 }}
+{{- end }}

@@ -60,6 +60,11 @@ configMaps:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
+      KAFKA_ENABLED: "true"
+      KAFKA_BROKERS: kafka-0.kafka.kafka.svc.cluster.local:9092
+      KAFKA_CLIENT_ID: axric-api-prod-6e0d9a3f2c7b18e4
+      KAFKA_GROUP_ID: axric-group
+      KAFKA_CHAT_TOPIC: chat-topic
 
 postgres:
   enabled: true
@@ -86,6 +91,56 @@ postgres:
     mountPath: /var/lib/postgresql/data
     pgdata: /var/lib/postgresql/data/pgdata
   resources: {}
+kafka:
+  enabled: true
+  name: kafka
+  namespace: kafka
+  createNamespace: true
+  replicas: 1
+  revisionHistoryLimit: 3
+  image: bitnami/kafka:3.8.0
+  imagePullPolicy: IfNotPresent
+  port: 9092
+  env:
+    - name: KAFKA_ENABLE_KRAFT
+      value: "yes"
+    - name: KAFKA_KRAFT_CLUSTER_ID
+      value: MkU3OEVBNTcwNTJENDM2Qk
+    - name: KAFKA_CFG_NODE_ID
+      value: "0"
+    - name: KAFKA_CFG_PROCESS_ROLES
+      value: broker,controller
+    - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+      value: CONTROLLER
+    - name: KAFKA_CFG_LISTENERS
+      value: PLAINTEXT://:9092,CONTROLLER://:9093
+    - name: KAFKA_CFG_ADVERTISED_LISTENERS
+      value: PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:9092
+    - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+      value: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+    - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+      value: 0@kafka-0.kafka.kafka.svc.cluster.local:9093
+    - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+      value: PLAINTEXT
+    - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+      value: "true"
+    - name: ALLOW_PLAINTEXT_LISTENER
+      value: "yes"
+  resources: {}
+  service:
+    enabled: true
+    type: ClusterIP
+    headless: true
+    port: 9092
+    targetPort: 9092
+  persistence:
+    enabled: true
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+  storage:
+    mountPath: /bitnami/kafka
 serviceAccounts:
   create: false
   items: []

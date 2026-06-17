@@ -81,3 +81,10 @@ PostgreSQL namespace helper
 {{- define "k8s-export.postgresNamespace" -}}
 {{- default (include "k8s-export.namespace" .) .Values.postgres.namespace -}}
 {{- end }}
+
+{{/*
+Kafka namespace helper
+*/}}
+{{- define "k8s-export.kafkaNamespace" -}}
+{{- default (include "k8s-export.namespace" .) .Values.kafka.namespace -}}
+{{- end }}

@@ -1,0 +1,9 @@
+{{- if and .Values.kafka.enabled .Values.kafka.createNamespace .Values.kafka.namespace (ne .Values.kafka.namespace .Values.namespace) }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.kafka.namespace }}
+  labels:
+    {{- include "k8s-export.labels" . | nindent 4 }}
+{{- end }}
