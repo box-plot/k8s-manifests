@@ -82,7 +82,7 @@ postgres:
     existingSecret: ""
     secretName: axric-postgres-secret
   persistence:
-    enabled: true
+    enabled: false
     size: 8Gi
     accessModes:
       - ReadWriteOnce
