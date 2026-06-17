@@ -34,13 +34,18 @@ spec:
           livenessProbe:
             tcpSocket:
               port: kafka
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             tcpSocket:
               port: kafka
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 5
+          startupProbe:
+            tcpSocket:
+              port: kafka
+            failureThreshold: 30
+            periodSeconds: 10
           volumeMounts:
             - name: kafka-data
               mountPath: {{ .Values.kafka.storage.mountPath | default "/bitnami/kafka" }}
