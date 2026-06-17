@@ -11,10 +11,9 @@ metadata:
   namespace: {{ include "k8s-export.namespace" . }}
   labels:
     {{- include "k8s-export.labels" . | nindent 4 }}
-  {{- with $ing.annotations }}
+  {{- $annotations := merge (dict "nginx.ingress.kubernetes.io/force-ssl-redirect" "true") (default dict $ing.annotations) }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- toYaml $annotations | nindent 4 }}
 spec:
   {{- if $ing.className }}
   ingressClassName: {{ $ing.className }}

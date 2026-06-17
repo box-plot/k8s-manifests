@@ -44,6 +44,7 @@ apps:
     className: nginx
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     hosts:
       - host: axrique.com
         paths:
@@ -55,7 +56,10 @@ apps:
             pathType: Prefix
             serviceName: axric-fe
             servicePort: 80
-    tls: []
+    tls:
+      - hosts:
+          - axrique.com
+        secretName: axrique-tls
   threadlyBackend:
     enabled: true
     name: threadly-backend
@@ -86,8 +90,11 @@ apps:
       enabled: true
       host: axrique.com
       path: /api/v1
-      tls: false
+      tls: true
       tlsSecret: threadly-tls
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     resources:
       requests:
         memory: "256Mi"
