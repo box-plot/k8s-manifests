@@ -43,7 +43,8 @@ apps:
     name: threadly-backend
     namespace: threadly-backend
     version: "1.0.1"
-    replicas: 1
+    replicaCount: 1
+    revisionHistoryLimit: 1
     port: 1080
     image:
       repository: jaron197/threadly-backend
@@ -114,7 +115,8 @@ configMaps:
       KAFKA_CLIENT_ID: axric-api-prod-6e0d9a3f2c7b18e4
       KAFKA_GROUP_ID: axric-group
       KAFKA_CHAT_TOPIC: chat-topic
-  threadly-backend-config:
+  threadly:
+    threadly-backend-config:
       enabled: true
       data:
         NODE_ENV: "production"

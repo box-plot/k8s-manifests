@@ -1,5 +1,5 @@
 {{- range $name, $cm := .Values.configMaps }}
-{{- if (default true $cm.enabled) }}
+{{- if and (default true $cm.enabled) (ne $name "threadly") }}
 ---
 apiVersion: v1
 kind: ConfigMap
