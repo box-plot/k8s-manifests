@@ -1,5 +1,5 @@
 {{- range $appName, $app := .Values.apps }}
-{{- if (default true $app.enabled) }}
+{{- if and (default true $app.enabled) (ne $appName "threadlyBackend") }}
 ---
 apiVersion: apps/v1
 kind: Deployment
