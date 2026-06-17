@@ -65,7 +65,10 @@ apps:
       name: threadly-backend-env-file
       mountPath: /app/app/config/env/.env
       content: |
-        # Runtime .env file for dotenv-safe in container
+        # SSL disabled for local cluster PostgreSQL
+        NODE_TLS_REJECT_UNAUTHORIZED=0
+        PG_SSL_MODE=disable
+        PG_REJECTUNAUTHORIZED=false
     service:
       type: ClusterIP
       port: 1080
