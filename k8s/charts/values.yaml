@@ -61,6 +61,10 @@ apps:
       name: threadly-backend-secret
       stringData:
         PG_PASSWORD: "6u9WLtpk5u"
+        DB_PASSWORD: "6u9WLtpk5u"
+        DATABASE_PASSWORD: "6u9WLtpk5u"
+        POSTGRES_PASSWORD: "6u9WLtpk5u"
+        PG_PASS: "6u9WLtpk5u"
     service:
       type: ClusterIP
       port: 1080
