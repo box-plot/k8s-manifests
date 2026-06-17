@@ -64,9 +64,8 @@ apps:
     envFile:
       enabled: true
       name: threadly-backend-env-file
-      mountPath: /app/app/config/env/.env
+      mountPath: /app/.env
       content: |
-        # SSL disabled for local cluster PostgreSQL
         NODE_TLS_REJECT_UNAUTHORIZED=0
         PG_SSL_MODE=disable
         PG_REJECTUNAUTHORIZED=false
