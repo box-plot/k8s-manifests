@@ -123,6 +123,7 @@ configMaps:
         PG_USER: "axricuser"
         PG_SSL: "false"
         PGSSLMODE: "disable"
+        sslmode: "disable"
         DB_SSL: "false"
         DATABASE_SSL: "false"
         JWT_EXPIRES_IN: "7d"

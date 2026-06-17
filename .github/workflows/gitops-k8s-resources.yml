@@ -17,16 +17,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from dispatch
-        id: version
+      - name: Extract deployment payload
+        id: payload
         run: |
           VERSION="${{ github.event.client_payload.version }}"
           if [ -z "$VERSION" ]; then
             echo "::error::Version not provided in repository_dispatch payload"
             exit 1
           fi
+
+          TARGET_APP="${{ github.event.client_payload.app }}"
+          SOURCE_REPO="${{ github.event.client_payload.sourceRepo }}"
+          if [ -z "$SOURCE_REPO" ]; then
+            SOURCE_REPO="${{ github.event.client_payload.repository }}"
+          fi
+
+          if [ -z "$TARGET_APP" ] && [ -n "$SOURCE_REPO" ]; then
+            case "$SOURCE_REPO" in
+              *deployment-backend*|*Deployment-Backend*) TARGET_APP="threadly" ;;
+              *threadly*) TARGET_APP="threadly" ;;
+              *deployment-frontend*|*Deployment-Frontend*) TARGET_APP="axric" ;;
+              *axric*) TARGET_APP="axric" ;;
+            esac
+          fi
+
+          if [ -z "$TARGET_APP" ]; then
+            echo "::error::Target app not provided. Send client_payload.app as 'axric' or 'threadly'."
+            exit 1
+          fi
+
+          case "$TARGET_APP" in
+            axric|threadly) ;;
+            *)
+              echo "::error::Unsupported app '$TARGET_APP'. Allowed values: axric, threadly"
+              exit 1
+              ;;
+          esac
+
           echo "NEW_VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "::notice::Deploying version: $VERSION"
+          echo "TARGET_APP=$TARGET_APP" >> $GITHUB_OUTPUT
+          echo "SOURCE_REPO=$SOURCE_REPO" >> $GITHUB_OUTPUT
+          echo "::notice::Deploying version: $VERSION to target: $TARGET_APP from: ${SOURCE_REPO:-unknown}"
 
       - name: Install yq
         run: |
@@ -40,16 +71,21 @@ jobs:
         run: |
           set -euo pipefail
           VALUES_FILE="k8s/charts/values.yaml"
-          VERSION="${{ steps.version.outputs.NEW_VERSION }}"
+          VERSION="${{ steps.payload.outputs.NEW_VERSION }}"
+          TARGET_APP="${{ steps.payload.outputs.TARGET_APP }}"
           DOCKER_USER="${{ secrets.DOCKERHUB_USERNAME }}"
 
-          echo "Updating image versions to $VERSION..."
+          echo "Updating image versions to $VERSION for $TARGET_APP..."
 
-          # Update axric-api image
-          yq eval ".apps.axric-api.image = \"$DOCKER_USER/axric-api:$VERSION\"" -i "$VALUES_FILE"
-          
-          # Update axric-fe image
-          yq eval ".apps.axric-fe.image = \"$DOCKER_USER/axric-fe:$VERSION\"" -i "$VALUES_FILE"
+          if [ "$TARGET_APP" = "axric" ]; then
+            yq eval ".apps.axric-api.image = \"$DOCKER_USER/axric-api:$VERSION\"" -i "$VALUES_FILE"
+            yq eval ".apps.axric-fe.image = \"$DOCKER_USER/axric-fe:$VERSION\"" -i "$VALUES_FILE"
+            echo "Updated Axric images"
+          else
+            yq eval ".apps.threadlyBackend.image.repository = \"$DOCKER_USER/threadly-backend\"" -i "$VALUES_FILE"
+            yq eval ".apps.threadlyBackend.image.tag = \"$VERSION\"" -i "$VALUES_FILE"
+            echo "Updated Threadly image"
+          fi
 
           echo "Updated values.yaml with new versions"
           cat "$VALUES_FILE" | grep -A 1 "image:"
@@ -65,11 +101,13 @@ jobs:
           fi
 
           git add k8s/charts/values.yaml
-          git commit -m "chore: Update image versions to ${{ steps.version.outputs.NEW_VERSION }}"
+          git commit -m "chore: Update ${{ steps.payload.outputs.TARGET_APP }} image version to ${{ steps.payload.outputs.NEW_VERSION }}"
           git push
 
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.version.outputs.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.payload.outputs.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target App**: ${{ steps.payload.outputs.TARGET_APP }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source Repo**: ${{ steps.payload.outputs.SOURCE_REPO }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: main" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
