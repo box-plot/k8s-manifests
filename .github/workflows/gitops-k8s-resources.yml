@@ -82,8 +82,7 @@ jobs:
             yq eval ".apps.axric-fe.image = \"$DOCKER_USER/axric-fe:$VERSION\"" -i "$VALUES_FILE"
             echo "Updated Axric images"
           else
-            yq eval ".apps.threadlyBackend.image.repository = \"$DOCKER_USER/threadly-backend\"" -i "$VALUES_FILE"
-            yq eval ".apps.threadlyBackend.image.tag = \"$VERSION\"" -i "$VALUES_FILE"
+            yq eval ".apps.threadlyBackend.image = \"$DOCKER_USER/threadly-backend:$VERSION\"" -i "$VALUES_FILE"
             echo "Updated Threadly image"
           fi
 
