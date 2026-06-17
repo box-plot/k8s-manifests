@@ -61,7 +61,7 @@ configMaps:
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
       KAFKA_ENABLED: "true"
-      KAFKA_BROKERS: kafka-0.kafka.kafka.svc.cluster.local:9092
+      KAFKA_BROKERS: kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:9092
       KAFKA_CLIENT_ID: axric-api-prod-6e0d9a3f2c7b18e4
       KAFKA_GROUP_ID: axric-group
       KAFKA_CHAT_TOPIC: chat-topic
@@ -93,8 +93,8 @@ postgres:
   resources: {}
 kafka:
   enabled: true
-  name: kafka
-  namespace: kafka
+  name: kafka-prod
+  namespace: kafka-prod
   createNamespace: true
   replicas: 1
   revisionHistoryLimit: 3
@@ -113,13 +113,13 @@ kafka:
     - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
       value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
     - name: KAFKA_LISTENERS
-      value: PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:29092,CONTROLLER://kafka-0.kafka.kafka.svc.cluster.local:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      value: PLAINTEXT://kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:29092,CONTROLLER://kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:29093,PLAINTEXT_HOST://0.0.0.0:9092
     - name: KAFKA_ADVERTISED_LISTENERS
-      value: PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:29092,PLAINTEXT_HOST://kafka-0.kafka.kafka.svc.cluster.local:9092
+      value: PLAINTEXT://kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:29092,PLAINTEXT_HOST://kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:9092
     - name: KAFKA_INTER_BROKER_LISTENER_NAME
       value: PLAINTEXT
     - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-      value: 1@kafka-0.kafka.kafka.svc.cluster.local:29093
+      value: 1@kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local:29093
     - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
       value: "1"
     - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
@@ -143,6 +143,67 @@ kafka:
     storageClassName: ""
   storage:
     mountPath: /var/lib/kafka/data
+kafkaDev:
+  enabled: true
+  name: kafka-dev
+  namespace: kafka-dev
+  createNamespace: true
+  replicas: 1
+  revisionHistoryLimit: 3
+  image: confluentinc/cp-kafka:8.2.1
+  imagePullPolicy: IfNotPresent
+  port: 9092
+  # Replace YOUR_NODE_IP below with your actual Kubernetes node IP (kubectl get nodes -o wide)
+  externalHostname: "43.229.133.190"
+  externalNodePort: 30092
+  env:
+    - name: CLUSTER_ID
+      value: QkU3OEVBNTcwNTJENDM2QU
+    - name: KAFKA_NODE_ID
+      value: "1"
+    - name: KAFKA_PROCESS_ROLES
+      value: broker,controller
+    - name: KAFKA_CONTROLLER_LISTENER_NAMES
+      value: CONTROLLER
+    - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+      value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    - name: KAFKA_LISTENERS
+      value: PLAINTEXT://kafka-dev-0.kafka-dev.kafka-dev.svc.cluster.local:29092,CONTROLLER://kafka-dev-0.kafka-dev.kafka-dev.svc.cluster.local:29093,PLAINTEXT_HOST://0.0.0.0:9092
+    - name: KAFKA_ADVERTISED_LISTENERS
+      value: PLAINTEXT://kafka-dev-0.kafka-dev.kafka-dev.svc.cluster.local:29092,PLAINTEXT_HOST://43.229.133.190:30092
+    - name: KAFKA_INTER_BROKER_LISTENER_NAME
+      value: PLAINTEXT
+    - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+      value: 1@kafka-dev-0.kafka-dev.kafka-dev.svc.cluster.local:29093
+    - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+      value: "1"
+    - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+      value: "1"
+    - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+      value: "1"
+    - name: KAFKA_LOG_DIRS
+      value: /var/lib/kafka/data
+  resources: {}
+  service:
+    enabled: true
+    type: ClusterIP
+    headless: true
+    port: 9092
+    targetPort: 9092
+  externalService:
+    enabled: true
+    type: NodePort
+    port: 9092
+    nodePort: 30092
+  persistence:
+    enabled: false
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+  storage:
+    mountPath: /var/lib/kafka/data
+
 serviceAccounts:
   create: false
   items: []

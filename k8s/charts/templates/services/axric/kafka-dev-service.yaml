@@ -1,0 +1,47 @@
+{{- if and .Values.kafkaDev.enabled (default true .Values.kafkaDev.service.enabled) }}
+---
+# Headless service — required for StatefulSet pod DNS resolution (internal cluster use)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafkaDev.name }}
+  namespace: {{ include "k8s-export.kafkaDevNamespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.kafkaDev.name "root" . "component" "messaging") | nindent 4 }}
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Values.kafkaDev.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: kafka
+      protocol: TCP
+      port: {{ .Values.kafkaDev.service.port | default .Values.kafkaDev.port | default 9092 }}
+      targetPort: {{ .Values.kafkaDev.service.targetPort | default .Values.kafkaDev.port | default 9092 }}
+{{- end }}
+
+{{- if and .Values.kafkaDev.enabled .Values.kafkaDev.externalService.enabled }}
+---
+# External NodePort service — exposes Kafka to clients outside the cluster
+# Connect from local machine: YOUR_NODE_IP:{{ .Values.kafkaDev.externalService.nodePort | default 30092 }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafkaDev.name }}-external
+  namespace: {{ include "k8s-export.kafkaDevNamespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.kafkaDev.name "root" . "component" "messaging") | nindent 4 }}
+spec:
+  type: {{ .Values.kafkaDev.externalService.type | default "NodePort" }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.kafkaDev.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: kafka-external
+      protocol: TCP
+      port: {{ .Values.kafkaDev.externalService.port | default 9092 }}
+      targetPort: {{ .Values.kafkaDev.port | default 9092 }}
+      nodePort: {{ .Values.kafkaDev.externalService.nodePort | default 30092 }}
+{{- end }}

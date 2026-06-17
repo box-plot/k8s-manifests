@@ -88,3 +88,10 @@ Kafka namespace helper
 {{- define "k8s-export.kafkaNamespace" -}}
 {{- default (include "k8s-export.namespace" .) .Values.kafka.namespace -}}
 {{- end }}
+
+{{/*
+Kafka Dev namespace helper
+*/}}
+{{- define "k8s-export.kafkaDevNamespace" -}}
+{{- default (include "k8s-export.namespace" .) .Values.kafkaDev.namespace -}}
+{{- end }}
