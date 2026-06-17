@@ -59,6 +59,12 @@ apps:
       enabled: true
       name: threadly-backend-secret
       stringData: {}
+    envFile:
+      enabled: true
+      name: threadly-backend-env-file
+      mountPath: /app/app/config/env/.env
+      content: |
+        # Runtime .env file for dotenv-safe in container
     service:
       type: ClusterIP
       port: 1080
@@ -108,7 +114,7 @@ configMaps:
     threadly-backend-config:
       enabled: true
       data:
-        NODE_ENV: "local"
+        NODE_ENV: "production"
         PORT: "1080"
         HTTPS_CERT_PATH: "./certs/cert.pem"
         HTTPS_KEY_PATH: "./certs/key.pem"

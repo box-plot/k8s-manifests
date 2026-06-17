@@ -1,0 +1,13 @@
+{{- if and .Values.apps.threadlyBackend.enabled .Values.apps.threadlyBackend.envFile.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.apps.threadlyBackend.envFile.name | default "threadly-backend-env-file" }}
+  namespace: {{ .Values.apps.threadlyBackend.namespace }}
+  labels:
+    app: {{ .Values.apps.threadlyBackend.name }}
+data:
+  .env: |
+{{ .Values.apps.threadlyBackend.envFile.content | nindent 4 }}
+{{- end }}
