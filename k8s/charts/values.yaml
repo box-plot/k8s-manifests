@@ -134,7 +134,7 @@ kafka:
     port: 9092
     targetPort: 9092
   persistence:
-    enabled: true
+    enabled: false
     size: 8Gi
     accessModes:
       - ReadWriteOnce
