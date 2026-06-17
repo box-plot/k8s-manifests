@@ -111,6 +111,9 @@ configMaps:
       enabled: true
       data:
         NODE_ENV: "production"
+        NODE_TLS_REJECT_UNAUTHORIZED: "0"
+        PG_SSL_MODE: "disable"
+        PG_REJECTUNAUTHORIZED: "false"
         PORT: "1080"
         HTTPS_CERT_PATH: "./certs/cert.pem"
         HTTPS_KEY_PATH: "./certs/key.pem"
