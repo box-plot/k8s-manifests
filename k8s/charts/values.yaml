@@ -91,7 +91,7 @@ apps:
       host: axrique.com
       path: /api/v1
       tls: true
-      tlsSecret: threadly-tls
+      tlsSecret: axrique-tls
       annotations:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
