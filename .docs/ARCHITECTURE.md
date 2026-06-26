@@ -15,7 +15,7 @@ External World
     │                                         │
     ▼                                         ▼
 Internet Ingress (nginx)                  External Access
-axrique.com:443                           43.229.133.190
+axric.co.th:443                           43.229.133.190
     │
     ├─ /api (rewrite to :3000)
     ├─ /api/v1 (rewrite to :1080)
@@ -113,7 +113,7 @@ Deployment: 3 replicas                Deployment: 1 replica
 - **Container Port:** 80
 - **Service Port:** 80 (ClusterIP)
 - **Namespace:** `axric`
-- **Routes:** Served at `axrique.com/`
+- **Routes:** Served at `axric.co.th/`
 - **Dependencies:** None (static frontend)
 
 #### Threadly Backend (`threadly-backend`)
@@ -180,7 +180,7 @@ Deployment: 3 replicas                Deployment: 1 replica
 
 #### Ingress (`axric-ingress`)
 - **Type:** Ingress (nginx controller)
-- **Hostname:** `axrique.com`
+- **Hostname:** `axric.co.th`
 - **TLS:** Optional (not configured)
 - **Routes:**
   - `/api` → `axric-api:3000` (Backend API)
@@ -190,7 +190,7 @@ Deployment: 3 replicas                Deployment: 1 replica
 
 #### Threadly Ingress (`threadly-backend-ingress`)
 - **Type:** Ingress (nginx controller)
-- **Hostname:** `axrique.com`
+- **Hostname:** `axric.co.th`
 - **Path:** `/api/v1`
 - **Backend:** `threadly-backend:1080`
 - **Namespace:** `threadly-backend`
@@ -265,7 +265,7 @@ axric-api pod → Service axric-postgres (external DNS)
 ```
 External Client (Internet)
             ↓
-nginx Ingress Controller (axrique.com)
+nginx Ingress Controller (axric.co.th)
             ↓
 Ingress Routes
   /api      → Service axric-api:3000
@@ -344,9 +344,9 @@ Consumer Groups:
 | axric-api | External APIs | HTTPS | 443 | Direct internet | ✅ |
 | threadly-backend | PostgreSQL | TCP | 5432 | axric-postgres.axric-db.svc.cluster.local | ✅ |
 | threadly-backend | Kafka | TCP | 9092 | kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local | ✅ |
-| External | axric-api | HTTPS | 443 | axrique.com/api | ✅ |
-| External | threadly-backend | HTTPS | 443 | axrique.com/api/v1 | ✅ |
-| External | axric-fe | HTTPS | 443 | axrique.com | ✅ |
+| External | axric-api | HTTPS | 443 | axric.co.th/api | ✅ |
+| External | threadly-backend | HTTPS | 443 | axric.co.th/api/v1 | ✅ |
+| External | axric-fe | HTTPS | 443 | axric.co.th | ✅ |
 | External | PostgreSQL | TCP | 30501 | 43.229.133.190:30501 | ✅ |
 | External | Kafka-dev | TCP | 30092 | 43.229.133.190:30092 | ✅ (dev only) |
 

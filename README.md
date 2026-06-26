@@ -11,7 +11,7 @@ Production-grade Kubernetes deployment using Helm + ArgoCD for multi-app archite
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Ingress (nginx)                          │
-│                    axrique.com                              │
+│                    axric.co.th                              │
 └───────────────────────┬─────────────────────────────────────┘
                         │
         ┌───────────────┼───────────────┐
@@ -234,9 +234,9 @@ configMaps:
 
 | Service | Namespace | Port | External Access | Purpose |
 |---------|-----------|------|-----------------|---------|
-| axric-api | axric | 3000 | ✅ axrique.com/api | Backend API |
-| axric-fe | axric | 80 | ✅ axrique.com/ | Web Frontend |
-| threadly-backend | threadly-backend | 1080 | ✅ axrique.com/api/v1 | Threadly API |
+| axric-api | axric | 3000 | ✅ axric.co.th/api | Backend API |
+| axric-fe | axric | 80 | ✅ axric.co.th/ | Web Frontend |
+| threadly-backend | threadly-backend | 1080 | ✅ axric.co.th/api/v1 | Threadly API |
 | axric-postgres | axric-db | 5432 | ✅ 43.229.133.190:30501 | Database (internal DNS) |
 | kafka-prod | kafka-prod | 9092 | Internal only | Message broker |
 | kafka-dev | kafka-dev | 9092 | ✅ 43.229.133.190:30092 | Dev Kafka (NodePort) |

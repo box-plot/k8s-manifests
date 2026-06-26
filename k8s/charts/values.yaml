@@ -46,7 +46,7 @@ apps:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     hosts:
-      - host: axrique.com
+      - host: axric.co.th
         paths:
           - path: /api
             pathType: Prefix
@@ -58,8 +58,8 @@ apps:
             servicePort: 80
     tls:
       - hosts:
-          - axrique.com
-        secretName: axrique-tls
+          - axric.co.th
+        secretName: axric-co-th-tls
   threadlyBackend:
     enabled: true
     name: threadly-backend
@@ -88,10 +88,10 @@ apps:
       targetPort: 1080
     ingress:
       enabled: true
-      host: axrique.com
+      host: axric.co.th
       path: /api/v1
       tls: true
-      tlsSecret: axrique-tls
+      tlsSecret: axric-co-th-tls
       annotations:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -109,7 +109,7 @@ configMaps:
   axric-backend-config:
     enabled: true
     data:
-      ALLOWED_ORIGIN: https://axrique.com
+      ALLOWED_ORIGIN: https://axric.co.th
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: "587"
       SERVER_PORT: "3000"
