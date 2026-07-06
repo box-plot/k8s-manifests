@@ -64,7 +64,7 @@ apps:
     enabled: true
     name: threadly-backend
     namespace: threadly-backend
-    image: jaron197/threadly-backend:1.0.3
+    image: jaron197/threadly-backend:1.0.4
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 1080
