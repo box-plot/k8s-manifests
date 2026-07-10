@@ -40,7 +40,7 @@ kubectl create namespace argocd
 
 # Application namespaces
 kubectl create namespace axric
-kubectl create namespace threadly-backend
+kubectl create namespace rekakim-backend
 kubectl create namespace axric-db
 kubectl create namespace kafka-prod
 kubectl create namespace kafka-dev
@@ -114,7 +114,7 @@ watch -n 2 'argocd app get axric-k8s-export | grep -A 5 Status'
 
 # 4. Verify all pods are running
 kubectl get pods -n axric
-kubectl get pods -n threadly-backend
+kubectl get pods -n rekakim-backend
 kubectl get pods -n axric-db
 kubectl get pods -n kafka-prod
 ```
@@ -207,33 +207,33 @@ kubectl rollout status deployment/axric-fe -n axric
 # 1. All pods running
 echo "=== Pod Status ==="
 kubectl get pods -n axric
-kubectl get pods -n threadly-backend
+kubectl get pods -n rekakim-backend
 kubectl get pods -n axric-db
 kubectl get pods -n kafka-prod
 
 # 2. Services available
 echo "=== Service Status ==="
 kubectl get svc -n axric
-kubectl get svc -n threadly-backend
+kubectl get svc -n rekakim-backend
 
 # 3. Ingress configured
 echo "=== Ingress Status ==="
 kubectl get ingress -n axric
-kubectl get ingress -n threadly-backend
+kubectl get ingress -n rekakim-backend
 
 # 4. ConfigMaps and Secrets loaded
 echo "=== ConfigMap Status ==="
 kubectl get configmap -n axric
-kubectl get configmap -n threadly-backend
+kubectl get configmap -n rekakim-backend
 
 echo "=== Secret Status ==="
 kubectl get secret -n axric
-kubectl get secret -n threadly-backend
+kubectl get secret -n rekakim-backend
 
 # 5. No pod errors
 echo "=== Pod Logs Check ==="
 kubectl logs deployment/axric-api -n axric --tail=5
-kubectl logs deployment/threadly-backend -n threadly-backend --tail=5
+kubectl logs deployment/rekakim-backend -n rekakim-backend --tail=5
 ```
 
 ### Health Check Script
@@ -245,7 +245,7 @@ echo "📋 Deployment Health Check"
 echo "=========================="
 
 # Namespace check
-for ns in axric threadly-backend axric-db kafka-prod; do
+for ns in axric rekakim-backend axric-db kafka-prod; do
   echo "Checking namespace: $ns"
   kubectl get pods -n $ns -o wide
   
@@ -268,7 +268,7 @@ echo "✅ Health check complete"
 
 #### Via GitHub Actions (Automatic)
 
-1. App repository pushes new image: `jaron197/threadly-backend:1.0.4`
+1. App repository pushes new image: `jaron197/rekakim-backend:1.0.4`
 2. App sends repository_dispatch to this repo
 3. GitHub Actions workflow auto-updates values.yaml
 4. ArgoCD detects change and auto-syncs
@@ -282,7 +282,7 @@ See [.github/WORKFLOWS.md] for dispatch format.
 vim k8s/charts/values.yaml
 
 # Update image:
-# apps.threadlyBackend.image: jaron197/threadly-backend:1.0.4
+# apps.rekakimBackend.image: jaron197/rekakim-backend:1.0.4
 # apps.axric-api.image: jaron197/axric-api:1.0.42
 
 # Validate
@@ -292,7 +292,7 @@ helm lint k8s/charts/
 helm upgrade axric-deployment k8s/charts -n axric
 
 # Monitor rollout
-kubectl rollout status deployment/threadly-backend -n threadly-backend
+kubectl rollout status deployment/rekakim-backend -n rekakim-backend
 kubectl rollout status deployment/axric-api -n axric
 ```
 
@@ -389,8 +389,8 @@ kubectl get pvc -n axric-db
 # Follow Axric API logs
 kubectl logs -f deployment/axric-api -n axric
 
-# Follow Threadly backend logs
-kubectl logs -f deployment/threadly-backend -n threadly-backend
+# Follow Rekakim backend logs
+kubectl logs -f deployment/rekakim-backend -n rekakim-backend
 
 # Follow PostgreSQL logs
 kubectl logs -f statefulset/axric-postgres -n axric-db
@@ -399,7 +399,7 @@ kubectl logs -f statefulset/axric-postgres -n axric-db
 kubectl logs -f statefulset/kafka-prod -n kafka-prod
 
 # Stream all pod logs across namespaces
-kubectl logs -f deployment/axric-api -n axric deployment/threadly-backend -n threadly-backend
+kubectl logs -f deployment/axric-api -n axric deployment/rekakim-backend -n rekakim-backend
 ```
 
 ### Pod Inspection
@@ -416,7 +416,7 @@ kubectl top nodes
 kubectl exec deployment/axric-api -n axric -- env | sort
 
 # Access pod shell
-kubectl exec -it deployment/threadly-backend -n threadly-backend -- /bin/sh
+kubectl exec -it deployment/rekakim-backend -n rekakim-backend -- /bin/sh
 ```
 
 ### Health Endpoints
@@ -428,8 +428,8 @@ kubectl port-forward svc/axric-api 3000:3000 -n axric
 # Test health endpoint
 curl http://localhost:3000/health
 
-# Test Threadly endpoint
-kubectl port-forward svc/threadly-backend 1080:1080 -n threadly-backend
+# Test Rekakim endpoint
+kubectl port-forward svc/rekakim-backend 1080:1080 -n rekakim-backend
 curl http://localhost:1080/health
 ```
 
@@ -482,19 +482,19 @@ kubectl get secret dockercfg -n axric -o jsonpath='{.data}'
 
 ```bash
 # Check pod logs
-kubectl logs deployment/threadly-backend -n threadly-backend --previous
+kubectl logs deployment/rekakim-backend -n rekakim-backend --previous
 
 # Get detailed pod info
-kubectl describe pod -l app=threadly-backend -n threadly-backend
+kubectl describe pod -l app=rekakim-backend -n rekakim-backend
 
 # Common causes:
 # 1. Missing environment variables
-kubectl get secret threadly-backend-secret -n threadly-backend -o yaml
+kubectl get secret rekakim-backend-secret -n rekakim-backend -o yaml
 # 2. Database connection refused
-kubectl exec -it deployment/threadly-backend -n threadly-backend -- \
+kubectl exec -it deployment/rekakim-backend -n rekakim-backend -- \
   sh -c 'nc -v axric-postgres.axric-db 5432'
 # 3. Port already in use
-kubectl port-forward svc/threadly-backend 1080:1080 -n threadly-backend
+kubectl port-forward svc/rekakim-backend 1080:1080 -n rekakim-backend
 ```
 
 ### Issue: OutOfMemory (OOMKilled)
@@ -570,3 +570,4 @@ kubectl delete job --field-selector status.successful=0 -n axric
 **Primary Contact:** jaronthongfoo@gmail.com  
 **Repository:** https://github.com/OWNER/k8s-manifests  
 **Documentation:** See [README.md](../README.md)
+

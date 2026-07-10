@@ -65,7 +65,7 @@ chore/K8S-45-update-dependencies
 ### Subject (Imperative, Present Tense)
 
 ```
-✅ feat(templates): add threadly-backend deployment
+✅ feat(templates): add rekakim-backend deployment
 ✅ fix(values): correct kafka broker hostname
 ✅ chore(chart): bump version to 1.1.0
 ❌ Updated deployment templates
@@ -357,11 +357,11 @@ What actually happened
 ## Environment
 - Kubernetes: 1.29.15
 - Helm: 3.x
-- Affected apps: threadly-backend
+- Affected apps: rekakim-backend
 
 ## Logs
 ```
-kubectl logs deployment/threadly-backend -n threadly-backend
+kubectl logs deployment/rekakim-backend -n rekakim-backend
 ...
 ```
 
@@ -413,3 +413,4 @@ Any other information?
 ---
 
 **Thank you for contributing! 🙏**
+

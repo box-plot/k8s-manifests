@@ -28,8 +28,8 @@ Logging, metrics, and health monitoring strategies.
 # Axric API logs (live)
 kubectl logs -f deployment/axric-api -n axric
 
-# Threadly Backend logs (live)
-kubectl logs -f deployment/threadly-backend -n threadly-backend
+# Rekakim Backend logs (live)
+kubectl logs -f deployment/rekakim-backend -n rekakim-backend
 
 # PostgreSQL logs (live)
 kubectl logs -f statefulset/axric-postgres -n axric-db
@@ -39,7 +39,7 @@ kubectl logs -f statefulset/kafka-prod -n kafka-prod
 
 # Multiple services
 kubectl logs -f deployment/axric-api -n axric & \
-kubectl logs -f deployment/threadly-backend -n threadly-backend & \
+kubectl logs -f deployment/rekakim-backend -n rekakim-backend & \
 wait
 ```
 
@@ -47,22 +47,22 @@ wait
 
 ```bash
 # Last 100 lines with timestamps
-kubectl logs deployment/threadly-backend -n threadly-backend \
+kubectl logs deployment/rekakim-backend -n rekakim-backend \
   --tail=100 \
   --timestamps=true
 
 # Logs from last 1 hour
-kubectl logs deployment/threadly-backend -n threadly-backend \
+kubectl logs deployment/rekakim-backend -n rekakim-backend \
   --since=1h \
   --timestamps=true
 
 # Logs between timestamps
-kubectl logs deployment/threadly-backend -n threadly-backend \
+kubectl logs deployment/rekakim-backend -n rekakim-backend \
   --since-time=2026-06-17T10:00:00Z \
   --until-time=2026-06-17T11:00:00Z
 
 # Search for errors
-kubectl logs deployment/threadly-backend -n threadly-backend | grep -i error
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep -i error
 ```
 
 ---
@@ -74,7 +74,7 @@ kubectl logs deployment/threadly-backend -n threadly-backend | grep -i error
 ```bash
 # Port-forward to service
 kubectl port-forward svc/axric-api 3000:3000 -n axric &
-kubectl port-forward svc/threadly-backend 1080:1080 -n threadly-backend &
+kubectl port-forward svc/rekakim-backend 1080:1080 -n rekakim-backend &
 
 # Test endpoints
 curl -i http://localhost:3000/health
@@ -88,13 +88,13 @@ curl -s http://localhost:3000/health | jq '.status'
 
 ```bash
 # Check probe configuration
-kubectl describe pod -l app=threadly-backend -n threadly-backend | grep -A 10 "Probes:"
+kubectl describe pod -l app=rekakim-backend -n rekakim-backend | grep -A 10 "Probes:"
 
 # Check probe events
-kubectl get events -n threadly-backend --sort-by='.lastTimestamp' | grep -i probe
+kubectl get events -n rekakim-backend --sort-by='.lastTimestamp' | grep -i probe
 
 # Monitor probe failures
-kubectl get pods -n threadly-backend -w
+kubectl get pods -n rekakim-backend -w
 ```
 
 ---
@@ -106,7 +106,7 @@ kubectl get pods -n threadly-backend -w
 ```bash
 # Pod memory and CPU usage
 kubectl top pods -n axric
-kubectl top pods -n threadly-backend
+kubectl top pods -n rekakim-backend
 kubectl top pods -n axric-db
 
 # Sort by memory usage
@@ -123,7 +123,7 @@ kubectl top nodes
 
 ```yaml
 # Example: Pod restart count
-kubectl get pods -n threadly-backend \
+kubectl get pods -n rekakim-backend \
   -o custom-columns=NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount
 ```
 
@@ -135,7 +135,7 @@ kubectl get pods -n threadly-backend \
 
 ```bash
 # Full pod information
-kubectl describe pod -l app=threadly-backend -n threadly-backend
+kubectl describe pod -l app=rekakim-backend -n rekakim-backend
 
 # Key sections:
 # - Containers: Image, ports, resource limits
@@ -148,10 +148,10 @@ kubectl describe pod -l app=threadly-backend -n threadly-backend
 
 ```bash
 # List all env vars in container
-kubectl exec deployment/threadly-backend -n threadly-backend -- env | sort
+kubectl exec deployment/rekakim-backend -n rekakim-backend -- env | sort
 
 # Check specific variable
-kubectl exec deployment/threadly-backend -n threadly-backend -- \
+kubectl exec deployment/rekakim-backend -n rekakim-backend -- \
   sh -c 'echo $PG_HOST'
 ```
 
@@ -159,7 +159,7 @@ kubectl exec deployment/threadly-backend -n threadly-backend -- \
 
 ```bash
 # Interactive shell
-kubectl exec -it deployment/threadly-backend -n threadly-backend -- /bin/sh
+kubectl exec -it deployment/rekakim-backend -n rekakim-backend -- /bin/sh
 
 # Inside pod: test connectivity
 nc -v axric-postgres.axric-db.svc.cluster.local 5432  # PostgreSQL
@@ -290,13 +290,13 @@ kubectl get events -n axric | grep -i "outofmemory\|oomkilled"
 
 ```bash
 # Connection refused errors
-kubectl logs deployment/threadly-backend -n threadly-backend | grep -i "refuse\|connect"
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep -i "refuse\|connect"
 
 # DNS resolution failures
-kubectl logs deployment/threadly-backend -n threadly-backend | grep -i "nxdomain\|nameserver"
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep -i "nxdomain\|nameserver"
 
 # Timeout errors
-kubectl logs deployment/threadly-backend -n threadly-backend | grep -i "timeout\|deadline"
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep -i "timeout\|deadline"
 ```
 
 ---
@@ -391,12 +391,12 @@ groups:
 
 ```bash
 # Morning standup
-kubectl get pods -n axric -n threadly-backend -n axric-db
+kubectl get pods -n axric -n rekakim-backend -n axric-db
 kubectl top pods -n axric
 kubectl get events -A --sort-by='.lastTimestamp' | tail -20
 
 # Error scan
-kubectl logs deployment/threadly-backend -n threadly-backend | grep -i error | tail -5
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep -i error | tail -5
 ```
 
 ### Weekly Review
@@ -435,3 +435,4 @@ kubectl logs deployment/axric-api -n axric --tail=10000 | grep "ms\|latency"
 
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team
+

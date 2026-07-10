@@ -13,7 +13,7 @@ Currently storing secrets directly in `values.yaml` is **NOT SECURE** for produc
 ```yaml
 # ❌ NOT FOR PRODUCTION
 apps:
-  threadlyBackend:
+  rekakimBackend:
     secret:
       stringData:
         PG_USER: "axricuser"
@@ -25,7 +25,7 @@ apps:
 
 | Service | Username | Password | Notes |
 |---------|----------|----------|-------|
-| PostgreSQL | axricuser | 6u9WLtpk5u | Used by Threadly & Axric |
+| PostgreSQL | axricuser | 6u9WLtpk5u | Used by Rekakim & Axric |
 | Docker Hub | jaronthongfoo | [via env] | If private repos needed |
 | LINE API | [in configMap] | [test token] | External service |
 | TikTok API | [in configMap] | [test token] | External service |
@@ -53,10 +53,10 @@ kubectl get pods -n kube-system | grep sealed
 
 ```bash
 # 1. Create secret normally
-kubectl create secret generic threadly-backend-secret \
+kubectl create secret generic rekakim-backend-secret \
   --from-literal=PG_USER=axricuser \
   --from-literal=PG_PASS=NEW_SECURE_PASSWORD \
-  -n threadly-backend \
+  -n rekakim-backend \
   --dry-run=client -o yaml > secret.yaml
 
 # 2. Seal it
@@ -73,20 +73,20 @@ kubectl apply -f sealed-secret.yaml
 #### In Helm Chart
 
 ```yaml
-# k8s/charts/templates/secrets/threadly-backend-secret.yaml
+# k8s/charts/templates/secrets/rekakim-backend-secret.yaml
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
-  name: threadly-backend-secret
-  namespace: {{ .Values.apps.threadlyBackend.namespace }}
+  name: rekakim-backend-secret
+  namespace: {{ .Values.apps.rekakimBackend.namespace }}
 spec:
   encryptedData:
     PG_USER: AgBvB3McZ1v...  # Encrypted value
     PG_PASS: AgCqK9Zad2m...  # Encrypted value
   template:
     metadata:
-      name: threadly-backend-secret
-      namespace: {{ .Values.apps.threadlyBackend.namespace }}
+      name: rekakim-backend-secret
+      namespace: {{ .Values.apps.rekakimBackend.namespace }}
     type: Opaque
 ```
 
@@ -118,7 +118,7 @@ apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
   name: vault-secret-store
-  namespace: threadly-backend
+  namespace: rekakim-backend
 spec:
   provider:
     vault:
@@ -128,20 +128,20 @@ spec:
       auth:
         kubernetes:
           mountPath: "kubernetes"
-          role: "threadly-backend"
+          role: "rekakim-backend"
 ---
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: threadly-backend-secret
-  namespace: threadly-backend
+  name: rekakim-backend-secret
+  namespace: rekakim-backend
 spec:
   refreshInterval: 1h
   secretStoreRef:
     name: vault-secret-store
     kind: SecretStore
   target:
-    name: threadly-backend-secret
+    name: rekakim-backend-secret
     creationPolicy: Owner
   data:
   - secretKey: PG_USER
@@ -164,7 +164,7 @@ apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
   name: aws-secrets
-  namespace: threadly-backend
+  namespace: rekakim-backend
 spec:
   provider:
     aws:
@@ -178,15 +178,15 @@ spec:
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: threadly-backend-secret
-  namespace: threadly-backend
+  name: rekakim-backend-secret
+  namespace: rekakim-backend
 spec:
   refreshInterval: 1h
   secretStoreRef:
     name: aws-secrets
     kind: SecretStore
   target:
-    name: threadly-backend-secret
+    name: rekakim-backend-secret
     creationPolicy: Owner
   data:
   - secretKey: PG_USER
@@ -247,17 +247,17 @@ vault write auth/kubernetes/config \
   token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token
 
 # Create policy
-vault policy write threadly-secret - <<EOF
+vault policy write rekakim-secret - <<EOF
 path "secret/data/database/postgres" {
   capabilities = ["read"]
 }
 EOF
 
 # Create Kubernetes role
-vault write auth/kubernetes/role/threadly-backend \
-  bound_service_account_names=threadly-backend \
-  bound_service_account_namespaces=threadly-backend \
-  policies=threadly-secret \
+vault write auth/kubernetes/role/rekakim-backend \
+  bound_service_account_names=rekakim-backend \
+  bound_service_account_namespaces=rekakim-backend \
+  policies=rekakim-secret \
   ttl=24h
 ```
 
@@ -280,11 +280,11 @@ kubectl exec -it statefulset/axric-postgres-0 -n axric-db -- \
   psql -U postgres -c "ALTER USER axricuser WITH PASSWORD '$NEW_PASSWORD';"
 
 # 4. Force pods to restart (pickup new secret)
-kubectl rollout restart deployment/threadly-backend -n threadly-backend
+kubectl rollout restart deployment/rekakim-backend -n rekakim-backend
 kubectl rollout restart deployment/axric-api -n axric
 
 # 5. Verify connectivity
-kubectl logs deployment/threadly-backend -n threadly-backend | grep "PostgreSQL connected"
+kubectl logs deployment/rekakim-backend -n rekakim-backend | grep "PostgreSQL connected"
 ```
 
 ### API Token Rotation
@@ -296,7 +296,7 @@ vault kv put secret/external-apis \
   tiktok_secret=NEW_TOKEN
 
 # Restart applications to pickup new values
-kubectl rollout restart deployment/threadly-backend -n threadly-backend
+kubectl rollout restart deployment/rekakim-backend -n rekakim-backend
 kubectl rollout restart deployment/axric-api -n axric
 ```
 
@@ -319,18 +319,18 @@ kubectl rollout restart deployment/axric-api -n axric
 # Limit who can view secrets
 kubectl create rolebinding secret-reader \
   --clusterrole=secret-reader \
-  --serviceaccount=threadly-backend:threadly-backend \
-  -n threadly-backend
+  --serviceaccount=rekakim-backend:rekakim-backend \
+  -n rekakim-backend
 
 # Audit secret access
-kubectl get events -n threadly-backend | grep Secret
+kubectl get events -n rekakim-backend | grep Secret
 ```
 
 ### 2. Encryption at Rest
 
 ```bash
 # Verify etcd encryption is enabled
-kubectl get secrets -n threadly-backend -o json | \
+kubectl get secrets -n rekakim-backend -o json | \
   jq '.items[0].metadata.managedFields[].manager'
 
 # Check encryption configuration
@@ -340,16 +340,16 @@ cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep encryption-provider-con
 ### 3. Network Policies
 
 ```yaml
-# k8s/charts/templates/networkpolicies/threadly-network-policy.yaml
+# k8s/charts/templates/networkpolicies/rekakim-network-policy.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: threadly-backend-network-policy
-  namespace: threadly-backend
+  name: rekakim-backend-network-policy
+  namespace: rekakim-backend
 spec:
   podSelector:
     matchLabels:
-      app: threadly-backend
+      app: rekakim-backend
   policyTypes:
   - Ingress
   - Egress
@@ -378,12 +378,12 @@ spec:
 ### 4. RBAC Restrictions
 
 ```yaml
-# k8s/charts/templates/rbac/threadly-role.yaml
+# k8s/charts/templates/rbac/rekakim-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: threadly-backend-role
-  namespace: threadly-backend
+  name: rekakim-backend-role
+  namespace: rekakim-backend
 rules:
 # Only allow reading ConfigMaps and Secrets in same namespace
 - apiGroups: [""]
@@ -391,7 +391,7 @@ rules:
   verbs: ["get", "list"]
 - apiGroups: [""]
   resources: ["secrets"]
-  resourceNames: ["threadly-backend-secret"]
+  resourceNames: ["rekakim-backend-secret"]
   verbs: ["get"]
 ```
 
@@ -463,7 +463,7 @@ git secrets --scan
 ```yaml
 # ❌ DO NOT USE IN PRODUCTION
 apps:
-  threadlyBackend:
+  rekakimBackend:
     secret:
       enabled: true
       stringData:
@@ -476,7 +476,7 @@ apps:
 ```yaml
 # ✅ PRODUCTION READY
 apps:
-  threadlyBackend:
+  rekakimBackend:
     secret:
       enabled: false  # Use external secret instead
 externalSecrets:
@@ -497,3 +497,4 @@ externalSecrets:
 
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team
+

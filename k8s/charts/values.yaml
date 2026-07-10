@@ -60,23 +60,23 @@ apps:
       - hosts:
           - axric.co.th
         secretName: axric-co-th-tls
-  threadlyBackend:
+  rekakimBackend:
     enabled: true
-    name: threadly-backend
-    namespace: threadly-backend
-    image: jaron197/threadly-backend:1.0.4
+    name: rekakim-backend
+    namespace: rekakim-backend
+    image: jaron197/rekakim-backend:1.0.0
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 1080
     pullPolicy: IfNotPresent
     envFrom:
       configMaps:
-        - threadly-backend-config
+        - rekakim-backend-config
       secrets:
-        - threadly-backend-secret
+        - rekakim-backend-secret
     secret:
       enabled: true
-      name: threadly-backend-secret
+      name: rekakim-backend-secret
       stringData:
         PG_USER: "axricuser"
         PG_PASS: "6u9WLtpk5u"
@@ -118,8 +118,8 @@ configMaps:
       KAFKA_CLIENT_ID: axric-api-prod-6e0d9a3f2c7b18e4
       KAFKA_GROUP_ID: axric-group
       KAFKA_CHAT_TOPIC: chat-topic
-  threadly:
-    threadly-backend-config:
+  rekakim:
+    rekakim-backend-config:
       enabled: true
       data:
         NODE_ENV: "production"
@@ -143,6 +143,10 @@ configMaps:
         JWT_EXPIRES_IN: "7d"
         LINE_API_BASE_URL: "https://api.line.me/v2/bot"
         LINE_BOT_INFO_URL: "https://api.line.me/v2/bot/info"
+        LINE_LOGIN_CHANNEL_ID: "2008896065"
+        LINE_LOGIN_CHANNEL_SECRET: "88519fe8160a3ecf0e5d2f4f0c8e75bf"
+        LINE_CHANNEL_ACCESS_TOKEN: "X1j5+Tvi3SYRl7Hca4Wrzn/2VH1CcQsldDiDiXV3YQoxsbKdH3kf9jloyY31xM88ZiERA6uJhBzAMeUM/VfNbQctfDwuwDbZ7hrtbTyD5HhMZWmJ4tZXy3oQFnT5KEnlyRxHaJV5DRhYXaiBoiuVlQdB04t89/1O/w1cDnyilFU="
+        LINE_CHANNEL_SECRET: "b654b40b9204ae8d863e45ea52f0e632"
         TIKTOK_CLIENT_KEY: "sbaw18dzcdrvaeu8tz"
         TIKTOK_REDIRECT_URI: "https://5fab-2405-9800-b651-89d7-4c17-1b69-7408-abfb.ngrok-free.app/tiktok/auth/callback"
         TIKTOK_API: "https://open.tiktokapis.com"
@@ -167,7 +171,7 @@ configMaps:
         OPENAI_API_BASE_URL: "https://api.openai.com/v1"
         GEMINI_API_MODEL: "gemini-2.5-flash"
         GEMINI_API_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-        PINECONE_INDEX_NAME: "threadly"
+        PINECONE_INDEX_NAME: "rekakim"
 postgres:
   enabled: true
   name: axric-postgres
@@ -314,3 +318,4 @@ persistence:
 secrets:
   enabled: false
   items: []
+

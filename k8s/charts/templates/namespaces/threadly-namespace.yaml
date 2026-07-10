@@ -1,8 +1,0 @@
-{{- if .Values.apps.threadlyBackend.enabled }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Values.apps.threadlyBackend.namespace }}
-  labels:
-    app: {{ .Values.apps.threadlyBackend.name }}
-{{- end }}

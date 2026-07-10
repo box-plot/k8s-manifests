@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-06-17
 
 ### Added
-- Threadly backend format standardization (single image string format)
+- Rekakim backend format standardization (single image string format)
 - Environment-specific values files (dev, staging, prod)
 - Comprehensive documentation structure (.docs/)
 - Values schema validation (values.schema.json)
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions workflow documentation
 
 ### Changed
-- Refactored threadlyBackend structure to match axric apps format
+- Refactored rekakimBackend structure to match axric apps format
 - `port` renamed to `containerPort` for consistency
 - Helm Chart metadata enhanced
 - Improved secret ordering with sync-wave annotations
@@ -43,31 +43,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - HOST: 0.0.0.0 binding for app interfaces
 - Comprehensive SSL-disable environment variables
-- Dedicated threadly-backend deployment template
+- Dedicated rekakim-backend deployment template
 
 ## [1.0.2] - 2026-06-15
 
 ### Fixed
-- Duplicate threadly-backend deployments in ArgoCD
+- Duplicate rekakim-backend deployments in ArgoCD
 - Image pull failures (removed non-existent imagePullSecret)
 - Missing secret keys for database passwords
 
 ### Added
 - Generic template safety guards (hasKey checks)
-- Template exclusion for threadlyBackend from generic loop
+- Template exclusion for rekakimBackend from generic loop
 
 ## [1.0.1] - 2026-06-14
 
 ### Fixed
-- ArgoCD namespace sync errors (removed stale threadly-backend-uat override)
+- ArgoCD namespace sync errors (removed stale rekakim-backend-uat override)
 - Ingress template structure reorganization
 
 ## [1.0.0] - 2026-06-13
 
 ### Added
 - Initial Helm chart structure for multi-app Kubernetes deployment
-- Support for Axric API, Axric FE, Threadly Backend, PostgreSQL, Kafka
+- Support for Axric API, Axric FE, Rekakim Backend, PostgreSQL, Kafka
 - ArgoCD integration with auto-sync
 - GitHub Actions CI/CD pipeline for image updates
-- Multi-namespace architecture (axric, threadly-backend, kafka-prod, axric-db)
+- Multi-namespace architecture (axric, rekakim-backend, kafka-prod, axric-db)
 - RBAC and service account configuration
+

@@ -1,0 +1,9 @@
+{{- if .Values.apps.rekakimBackend.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.apps.rekakimBackend.namespace }}
+  labels:
+    app: {{ .Values.apps.rekakimBackend.name }}
+{{- end }}
+

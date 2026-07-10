@@ -1,38 +1,38 @@
-{{- if .Values.apps.threadlyBackend.enabled }}
+{{- if .Values.apps.rekakimBackend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.apps.threadlyBackend.name }}
-  namespace: {{ .Values.apps.threadlyBackend.namespace }}
+  name: {{ .Values.apps.rekakimBackend.name }}
+  namespace: {{ .Values.apps.rekakimBackend.namespace }}
   labels:
-    app: {{ .Values.apps.threadlyBackend.name }}
-    version: {{ .Values.apps.threadlyBackend.version }}
+    app: {{ .Values.apps.rekakimBackend.name }}
+    version: {{ .Values.apps.rekakimBackend.version }}
 spec:
-  replicas: {{ default 1 .Values.apps.threadlyBackend.replicaCount }}
+  replicas: {{ default 1 .Values.apps.rekakimBackend.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.apps.threadlyBackend.name }}
+      app: {{ .Values.apps.rekakimBackend.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.apps.threadlyBackend.name }}
-        version: {{ .Values.apps.threadlyBackend.version }}
+        app: {{ .Values.apps.rekakimBackend.name }}
+        version: {{ .Values.apps.rekakimBackend.version }}
     spec:
-      serviceAccountName: {{ .Values.apps.threadlyBackend.name }}
+      serviceAccountName: {{ .Values.apps.rekakimBackend.name }}
       containers:
-      - name: {{ .Values.apps.threadlyBackend.name }}
-        image: {{ .Values.apps.threadlyBackend.image }}
-        imagePullPolicy: {{ .Values.apps.threadlyBackend.pullPolicy | default "IfNotPresent" }}
+      - name: {{ .Values.apps.rekakimBackend.name }}
+        image: {{ .Values.apps.rekakimBackend.image }}
+        imagePullPolicy: {{ .Values.apps.rekakimBackend.pullPolicy | default "IfNotPresent" }}
         ports:
         - name: http
-          containerPort: {{ .Values.apps.threadlyBackend.containerPort | default 1080 }}
+          containerPort: {{ .Values.apps.rekakimBackend.containerPort | default 1080 }}
           protocol: TCP
         envFrom:
-        {{- range .Values.apps.threadlyBackend.envFrom.configMaps }}
+        {{- range .Values.apps.rekakimBackend.envFrom.configMaps }}
         - configMapRef:
             name: {{ . }}
         {{- end }}
-        {{- range .Values.apps.threadlyBackend.envFrom.secrets }}
+        {{- range .Values.apps.rekakimBackend.envFrom.secrets }}
         - secretRef:
             name: {{ . }}
         {{- end }}
@@ -66,11 +66,11 @@ spec:
           failureThreshold: 6
         resources:
           requests:
-            memory: {{ .Values.apps.threadlyBackend.resources.requests.memory }}
-            cpu: {{ .Values.apps.threadlyBackend.resources.requests.cpu }}
+            memory: {{ .Values.apps.rekakimBackend.resources.requests.memory }}
+            cpu: {{ .Values.apps.rekakimBackend.resources.requests.cpu }}
           limits:
-            memory: {{ .Values.apps.threadlyBackend.resources.limits.memory }}
-            cpu: {{ .Values.apps.threadlyBackend.resources.limits.cpu }}
+            memory: {{ .Values.apps.rekakimBackend.resources.limits.memory }}
+            cpu: {{ .Values.apps.rekakimBackend.resources.limits.cpu }}
         volumeMounts:
         - name: app-config
           mountPath: /app/config
@@ -78,9 +78,10 @@ spec:
       volumes:
       - name: app-config
         configMap:
-          name: {{ .Values.apps.threadlyBackend.name }}-config
-      {{- with .Values.apps.threadlyBackend.nodeSelector }}
+          name: {{ .Values.apps.rekakimBackend.name }}-config
+      {{- with .Values.apps.rekakimBackend.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- end }}
+

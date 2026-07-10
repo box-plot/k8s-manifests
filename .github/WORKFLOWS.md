@@ -21,7 +21,7 @@ Automatically update Kubernetes deployments when application images are publishe
 
 **Flow:**
 ```
-App Repo (axric-api, threadly-backend)
+App Repo (axric-api, rekakim-backend)
   ↓ publishes image
   ↓ sends repository_dispatch
 GitHub Actions (k8s-manifests repo)
@@ -76,8 +76,8 @@ SOURCE_REPO="${{ github.event.client_payload.sourceRepo }}"
 
 ```bash
 if [[ "$SOURCE_REPO" == *"deployment-backend"* ]] || \
-   [[ "$SOURCE_REPO" == *"threadly"* ]]; then
-  TARGET_APP="threadly"
+   [[ "$SOURCE_REPO" == *"rekakim"* ]]; then
+  TARGET_APP="rekakim"
 elif [[ "$SOURCE_REPO" == *"deployment-frontend"* ]] || \
      [[ "$SOURCE_REPO" == *"axric"* ]]; then
   TARGET_APP="axric"
@@ -85,14 +85,14 @@ fi
 ```
 
 **Pattern Matching:**
-- `deployment-backend`, `Deployment-Backend`, `threadly` → `threadly`
+- `deployment-backend`, `Deployment-Backend`, `rekakim` → `rekakim`
 - `deployment-frontend`, `Deployment-Frontend`, `axric-api`, `axric-fe` → `axric`
 
 #### 4. Update values.yaml
 
 ```bash
-# For Threadly
-yq eval ".apps.threadlyBackend.image = \"jaron197/threadly-backend:$VERSION\"" -i values.yaml
+# For Rekakim
+yq eval ".apps.rekakimBackend.image = \"jaron197/rekakim-backend:$VERSION\"" -i values.yaml
 
 # For Axric
 yq eval ".apps.axric-api.image = \"jaron197/axric-api:$VERSION\"" -i values.yaml
@@ -114,7 +114,7 @@ git push origin main
 Output to GitHub step summary:
 ```
 ✅ Deployment Updated
-App: threadly-backend
+App: rekakim-backend
 Version: 1.0.4
 Source: deployment-backend
 Time: 2026-06-17 14:23:15
@@ -339,12 +339,12 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build image
-        run: docker build -t jaron197/threadly-backend:${{ github.ref_name }} .
+        run: docker build -t jaron197/rekakim-backend:${{ github.ref_name }} .
       
       - name: Push image
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push jaron197/threadly-backend:${{ github.ref_name }}
+          docker push jaron197/rekakim-backend:${{ github.ref_name }}
       
       - name: Trigger k8s deployment
         run: |
@@ -382,7 +382,7 @@ jobs:
       
       - name: Check pod status
         run: |
-          kubectl get pods -n axric -n threadly-backend
+          kubectl get pods -n axric -n rekakim-backend
           kubectl get events -A --sort-by='.lastTimestamp' | tail -20
 ```
 
@@ -398,3 +398,4 @@ jobs:
 
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team
+

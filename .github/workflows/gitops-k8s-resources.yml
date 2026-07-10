@@ -34,22 +34,22 @@ jobs:
 
           if [ -z "$TARGET_APP" ] && [ -n "$SOURCE_REPO" ]; then
             case "$SOURCE_REPO" in
-              *deployment-backend*|*Deployment-Backend*) TARGET_APP="threadly" ;;
-              *threadly*) TARGET_APP="threadly" ;;
+              *deployment-backend*|*Deployment-Backend*) TARGET_APP="rekakim" ;;
+              *rekakim*) TARGET_APP="rekakim" ;;
               *deployment-frontend*|*Deployment-Frontend*) TARGET_APP="axric" ;;
               *axric*) TARGET_APP="axric" ;;
             esac
           fi
 
           if [ -z "$TARGET_APP" ]; then
-            echo "::error::Target app not provided. Send client_payload.app as 'axric' or 'threadly'."
+            echo "::error::Target app not provided. Send client_payload.app as 'axric' or 'rekakim'."
             exit 1
           fi
 
           case "$TARGET_APP" in
-            axric|threadly) ;;
+            axric|rekakim) ;;
             *)
-              echo "::error::Unsupported app '$TARGET_APP'. Allowed values: axric, threadly"
+              echo "::error::Unsupported app '$TARGET_APP'. Allowed values: axric, rekakim"
               exit 1
               ;;
           esac
@@ -82,8 +82,8 @@ jobs:
             yq eval ".apps.axric-fe.image = \"$DOCKER_USER/axric-fe:$VERSION\"" -i "$VALUES_FILE"
             echo "Updated Axric images"
           else
-            yq eval ".apps.threadlyBackend.image = \"$DOCKER_USER/threadly-backend:$VERSION\"" -i "$VALUES_FILE"
-            echo "Updated Threadly image"
+            yq eval ".apps.rekakimBackend.image = \"$DOCKER_USER/rekakim-backend:$VERSION\"" -i "$VALUES_FILE"
+            echo "Updated Rekakim image"
           fi
 
           echo "Updated values.yaml with new versions"

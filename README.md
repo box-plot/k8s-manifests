@@ -21,7 +21,7 @@ Production-grade Kubernetes deployment using Helm + ArgoCD for multi-app archite
     │           │               │
     ▼           ▼               ▼
 ┌─────────────┐ ┌──────────────┐ ┌─────────┐
-│ Axric API   │ │ Threadly     │ │ Axric   │
+│ Axric API   │ │ Rekakim     │ │ Axric   │
 │ Node.js:3000│ │ Backend:1080 │ │ FE:80   │
 └──────┬──────┘ └──────┬───────┘ └─────────┘
        │               │
@@ -39,7 +39,7 @@ Production-grade Kubernetes deployment using Helm + ArgoCD for multi-app archite
 
 Namespaces:
 - axric (Axric API + Frontend)
-- threadly-backend (Threadly application)
+- rekakim-backend (Rekakim application)
 - axric-db (PostgreSQL)
 - kafka-prod (Production Kafka)
 - kafka-dev (Development Kafka, external access)
@@ -87,7 +87,7 @@ argocd app sync axric-k8s-export
 
 # 4. Watch deployment
 kubectl get pods -n axric -w
-kubectl get pods -n threadly-backend -w
+kubectl get pods -n rekakim-backend -w
 ```
 
 ### Option 2: Helm (Manual, for Testing)
@@ -144,7 +144,7 @@ k8s-manifests/
 │   │   └── templates/
 │   │       ├── deployments/
 │   │       │   ├── axric-deployment.yaml
-│   │       │   └── threadly-deployment.yaml
+│   │       │   └── rekakim-deployment.yaml
 │   │       ├── statefulsets/
 │   │       ├── services/
 │   │       ├── ingresses/
@@ -236,7 +236,7 @@ configMaps:
 |---------|-----------|------|-----------------|---------|
 | axric-api | axric | 3000 | ✅ axric.co.th/api | Backend API |
 | axric-fe | axric | 80 | ✅ axric.co.th/ | Web Frontend |
-| threadly-backend | threadly-backend | 1080 | ✅ axric.co.th/api/v1 | Threadly API |
+| rekakim-backend | rekakim-backend | 1080 | ✅ axric.co.th/api/v1 | Rekakim API |
 | axric-postgres | axric-db | 5432 | ✅ 43.229.133.190:30501 | Database (internal DNS) |
 | kafka-prod | kafka-prod | 9092 | Internal only | Message broker |
 | kafka-dev | kafka-dev | 9092 | ✅ 43.229.133.190:30092 | Dev Kafka (NodePort) |
@@ -249,7 +249,7 @@ Secrets are stored as Kubernetes Secret objects. Currently stored in values.yaml
 
 **Critical Credentials:**
 - PostgreSQL: `axricuser` / `6u9WLtpk5u`
-- Threadly Database: Same as PostgreSQL
+- Rekakim Database: Same as PostgreSQL
 - External APIs: LINE, TikTok, Facebook tokens
 
 **⚠️ Production Security:**
@@ -281,7 +281,7 @@ helm install axric-deployment k8s/charts -n axric --create-namespace
 
 # 5. Verify
 kubectl get pods -n axric
-kubectl get pods -n threadly-backend
+kubectl get pods -n rekakim-backend
 ```
 
 ### Automated Deployment (GitHub Actions + ArgoCD)
@@ -306,10 +306,10 @@ See [.github/WORKFLOWS.md](.github/WORKFLOWS.md) for complete setup.
 
 ```bash
 # Check logs
-kubectl logs deployment/threadly-backend -n threadly-backend --tail=50
+kubectl logs deployment/rekakim-backend -n rekakim-backend --tail=50
 
 # Describe pod
-kubectl describe pod -n threadly-backend -l app=threadly-backend
+kubectl describe pod -n rekakim-backend -l app=rekakim-backend
 
 # Common issues:
 # - Secret not found: Check secret creation order (sync-wave: -1)
@@ -362,7 +362,7 @@ See [.docs/DEPLOYMENT.md](.docs/DEPLOYMENT.md) for complete runbook.
 ### Update Image Versions
 
 **Automatic (via GitHub Actions):**
-1. App repo publishes image: `jaron197/threadly-backend:1.0.4`
+1. App repo publishes image: `jaron197/rekakim-backend:1.0.4`
 2. Send dispatch to this repo (see [.github/WORKFLOWS.md](.github/WORKFLOWS.md))
 3. Workflow auto-updates `values.yaml`
 4. ArgoCD syncs cluster
@@ -448,7 +448,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## 🎯 Key Features
 
-✅ Multi-app Kubernetes deployment (Axric + Threadly)  
+✅ Multi-app Kubernetes deployment (Axric + Rekakim)  
 ✅ Production-grade Helm chart  
 ✅ ArgoCD GitOps automation  
 ✅ GitHub Actions CI/CD pipeline  
@@ -463,3 +463,4 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team
+

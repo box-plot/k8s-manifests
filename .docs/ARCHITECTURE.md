@@ -32,7 +32,7 @@ Deployment: 3 replicas                Deployment: 1 replica
         ┌───────────────┼───────────────┐
         │               │               │
         ▼               ▼               ▼
-    threadly-backend    │          PostgreSQL
+    rekakim-backend    │          PostgreSQL
     :1080 (Node.js)     │          StatefulSet
     Deployment: 1       │          :5432
                         │
@@ -52,9 +52,9 @@ Deployment: 3 replicas                Deployment: 1 replica
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌─────────────────┐  ┌──────────────────────┐             │
-│  │ axric           │  │ threadly-backend     │             │
+│  │ axric           │  │ rekakim-backend     │             │
 │  ├─────────────────┤  ├──────────────────────┤             │
-│  │ - axric-api:3   │  │ - threadly-backend:1 │             │
+│  │ - axric-api:3   │  │ - rekakim-backend:1 │             │
 │  │ - axric-fe:1    │  │ - ConfigMap          │             │
 │  │ - ConfigMap     │  │ - Secret             │             │
 │  │ - Secret        │  │ - Service            │             │
@@ -116,22 +116,22 @@ Deployment: 3 replicas                Deployment: 1 replica
 - **Routes:** Served at `axric.co.th/`
 - **Dependencies:** None (static frontend)
 
-#### Threadly Backend (`threadly-backend`)
+#### Rekakim Backend (`rekakim-backend`)
 - **Type:** Deployment (1 replica)
-- **Image:** `jaron197/threadly-backend:1.0.3`
+- **Image:** `jaron197/rekakim-backend:1.0.3`
 - **Container Port:** 1080
 - **Service Port:** 1080 (ClusterIP)
-- **Namespace:** `threadly-backend`
+- **Namespace:** `rekakim-backend`
 - **Dependencies:**
   - PostgreSQL (axric-db namespace)
   - Kafka (kafka-prod namespace)
-  - ConfigMap: `threadly-backend-config`
-  - Secret: `threadly-backend-secret`
+  - ConfigMap: `rekakim-backend-config`
+  - Secret: `rekakim-backend-secret`
 - **Health Probes:**
   - Startup: Node exec probe (localhost:1080), 5s interval, 60 retries
   - Liveness: Node exec probe (localhost:1080), 10s interval, 6 retries
   - Readiness: Node exec probe (localhost:1080), 5s interval, 20s initial delay
-- **Service Account:** `threadly-backend` (limited RBAC)
+- **Service Account:** `rekakim-backend` (limited RBAC)
 
 ---
 
@@ -184,16 +184,16 @@ Deployment: 3 replicas                Deployment: 1 replica
 - **TLS:** Optional (not configured)
 - **Routes:**
   - `/api` → `axric-api:3000` (Backend API)
-  - `/api/v1` → `threadly-backend:1080` (Threadly API)
+  - `/api/v1` → `rekakim-backend:1080` (Rekakim API)
   - `/` → `axric-fe:80` (Frontend static)
 - **Namespace:** `axric`
 
-#### Threadly Ingress (`threadly-backend-ingress`)
+#### Rekakim Ingress (`rekakim-backend-ingress`)
 - **Type:** Ingress (nginx controller)
 - **Hostname:** `axric.co.th`
 - **Path:** `/api/v1`
-- **Backend:** `threadly-backend:1080`
-- **Namespace:** `threadly-backend`
+- **Backend:** `rekakim-backend:1080`
+- **Namespace:** `rekakim-backend`
 
 ---
 
@@ -214,7 +214,7 @@ DATABASE_PORT: 5432
 DATABASE_NAME: axricdb
 ```
 
-**`threadly-backend-config`** (namespace: threadly-backend)
+**`rekakim-backend-config`** (namespace: rekakim-backend)
 ```yaml
 NODE_ENV: production
 HOST: 0.0.0.0
@@ -235,7 +235,7 @@ MAIL_USER: <email>
 MAIL_PASSWORD: <app-password>
 ```
 
-**`threadly-backend-secret`** (namespace: threadly-backend)
+**`rekakim-backend-secret`** (namespace: rekakim-backend)
 ```yaml
 PG_USER: axricuser
 PG_PASS: 6u9WLtpk5u
@@ -269,7 +269,7 @@ nginx Ingress Controller (axric.co.th)
             ↓
 Ingress Routes
   /api      → Service axric-api:3000
-  /api/v1   → Service threadly-backend:1080
+  /api/v1   → Service rekakim-backend:1080
   /         → Service axric-fe:80
             ↓
 Application Pods (across namespaces)
@@ -280,7 +280,7 @@ Application Pods (across namespaces)
 ```
 Internal (within cluster):
   axric-api → DNS: axric-postgres.axric-db.svc.cluster.local:5432
-  threadly-backend → Same DNS
+  rekakim-backend → Same DNS
 
 External (from outside cluster):
   Client → 43.229.133.190:30501 (NodePort)
@@ -300,7 +300,7 @@ Kafka Broker (kafka-prod namespace)
     ↓
 Consumer Groups:
   - axric-group (axric-api consumers)
-  - axric-group-dev (threadly-backend consumers)
+  - axric-group-dev (rekakim-backend consumers)
 ```
 
 ---
@@ -322,9 +322,9 @@ Consumer Groups:
         ↓
 7. Kafka stores message (partition/offset)
         ↓
-8. threadly-backend consumer group reads
+8. rekakim-backend consumer group reads
         ↓
-9. threadly-backend pod processes
+9. rekakim-backend pod processes
         ↓
 10. Stores in PostgreSQL if needed
         ↓
@@ -342,10 +342,10 @@ Consumer Groups:
 | axric-api | PostgreSQL | TCP | 5432 | axric-postgres.axric-db.svc.cluster.local | ✅ |
 | axric-api | Kafka | TCP | 9092 | kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local | ✅ |
 | axric-api | External APIs | HTTPS | 443 | Direct internet | ✅ |
-| threadly-backend | PostgreSQL | TCP | 5432 | axric-postgres.axric-db.svc.cluster.local | ✅ |
-| threadly-backend | Kafka | TCP | 9092 | kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local | ✅ |
+| rekakim-backend | PostgreSQL | TCP | 5432 | axric-postgres.axric-db.svc.cluster.local | ✅ |
+| rekakim-backend | Kafka | TCP | 9092 | kafka-prod-0.kafka-prod.kafka-prod.svc.cluster.local | ✅ |
 | External | axric-api | HTTPS | 443 | axric.co.th/api | ✅ |
-| External | threadly-backend | HTTPS | 443 | axric.co.th/api/v1 | ✅ |
+| External | rekakim-backend | HTTPS | 443 | axric.co.th/api/v1 | ✅ |
 | External | axric-fe | HTTPS | 443 | axric.co.th | ✅ |
 | External | PostgreSQL | TCP | 30501 | 43.229.133.190:30501 | ✅ |
 | External | Kafka-dev | TCP | 30092 | 43.229.133.190:30092 | ✅ (dev only) |
@@ -365,7 +365,7 @@ axric-fe:
   Requests: 50m CPU, 128Mi Memory
   Limits:   200m CPU, 256Mi Memory
 
-threadly-backend:
+rekakim-backend:
   Requests: 100m CPU, 256Mi Memory
   Limits:   500m CPU, 512Mi Memory
 
@@ -390,10 +390,10 @@ kafka-prod:
 # Only allow traffic specified
 - axric-api → PostgreSQL (port 5432)
 - axric-api → Kafka (port 9092)
-- threadly-backend → PostgreSQL (port 5432)
-- threadly-backend → Kafka (port 9092)
+- rekakim-backend → PostgreSQL (port 5432)
+- rekakim-backend → Kafka (port 9092)
 - Ingress → axric-api (port 3000)
-- Ingress → threadly-backend (port 1080)
+- Ingress → rekakim-backend (port 1080)
 - Ingress → axric-fe (port 80)
 - Block all other pod-to-pod traffic
 ```
@@ -405,9 +405,9 @@ axric-api:
   - Service Account: axric-api (if needed)
   - Permissions: ConfigMap/Secret read in axric namespace
 
-threadly-backend:
-  - Service Account: threadly-backend
-  - Permissions: ConfigMap/Secret read in threadly-backend namespace
+rekakim-backend:
+  - Service Account: rekakim-backend
+  - Permissions: ConfigMap/Secret read in rekakim-backend namespace
 
 default:
   - No special permissions
@@ -426,7 +426,7 @@ axric-api:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 70
 
-threadly-backend:
+rekakim-backend:
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
@@ -490,3 +490,4 @@ Applications:
 
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team
+

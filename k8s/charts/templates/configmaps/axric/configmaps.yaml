@@ -1,5 +1,5 @@
 {{- range $name, $cm := .Values.configMaps }}
-{{- if and (default true $cm.enabled) (ne $name "threadly") }}
+{{- if and (default true $cm.enabled) (ne $name "rekakim") }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -12,4 +12,5 @@ data:
   {{- toYaml $cm.data | nindent 2 }}
 {{- end }}
 {{- end }}
+
 

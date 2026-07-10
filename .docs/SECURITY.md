@@ -115,11 +115,11 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-threadly-backend-traffic
+  name: allow-rekakim-backend-traffic
 spec:
   podSelector:
     matchLabels:
-      app: threadly-backend
+      app: rekakim-backend
   policyTypes:
   - Ingress
   - Egress
@@ -177,37 +177,37 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: threadly-backend
-  namespace: threadly-backend
+  name: rekakim-backend
+  namespace: rekakim-backend
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: threadly-backend-role
-  namespace: threadly-backend
+  name: rekakim-backend-role
+  namespace: rekakim-backend
 rules:
 - apiGroups: [""]
   resources: ["configmaps"]
-  resourceNames: ["threadly-backend-config"]
+  resourceNames: ["rekakim-backend-config"]
   verbs: ["get"]
 - apiGroups: [""]
   resources: ["secrets"]
-  resourceNames: ["threadly-backend-secret"]
+  resourceNames: ["rekakim-backend-secret"]
   verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: threadly-backend-rolebinding
-  namespace: threadly-backend
+  name: rekakim-backend-rolebinding
+  namespace: rekakim-backend
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: threadly-backend-role
+  name: rekakim-backend-role
 subjects:
 - kind: ServiceAccount
-  name: threadly-backend
-  namespace: threadly-backend
+  name: rekakim-backend
+  namespace: rekakim-backend
 ```
 
 ---
@@ -361,3 +361,4 @@ kubectl delete pod <pod-name> -n <namespace>
 **Last Updated:** 2026-06-17  
 **Maintained By:** DevOps Team  
 **Next Review:** 2026-09-17
+
