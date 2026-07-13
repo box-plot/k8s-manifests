@@ -3,7 +3,7 @@ apps:
   axric-api:
     enabled: true
     name: axric-api
-    image: jaron197/axric-api:1.0.50
+    image: jaron197/axric-api:1.0.51
     replicaCount: 3
     revisionHistoryLimit: 3
     containerPort: 3000
@@ -23,7 +23,7 @@ apps:
   axric-fe:
     enabled: true
     name: axric-fe
-    image: jaron197/axric-fe:1.0.50
+    image: jaron197/axric-fe:1.0.51
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 80 # FIXED (was 8080)
@@ -318,4 +318,3 @@ persistence:
 secrets:
   enabled: false
   items: []
-
