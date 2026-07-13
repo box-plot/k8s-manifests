@@ -119,7 +119,7 @@ apps:
     image: jaron197/rekakim-app:1.0.3
     replicaCount: 1
     revisionHistoryLimit: 3
-    containerPort: 80
+    containerPort: 8080
     pullPolicy: IfNotPresent
     strategy: RollingUpdate
     envFrom:
@@ -130,7 +130,7 @@ apps:
       enabled: true
       type: ClusterIP
       port: 80
-      targetPort: 80
+      targetPort: 8080
 configMaps:
   axric-backend-config:
     enabled: true
