@@ -3,6 +3,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ .Values.apps.rekakimBackend.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
   labels:
     app: {{ .Values.apps.rekakimBackend.name }}
 {{- end }}
