@@ -109,6 +109,24 @@ apps:
     env: []
     config: {}
     nodeSelector: {}
+  rekakimApp:
+    enabled: true
+    name: rekakim-app
+    image: jaron197/rekakim-app:1.0.3
+    replicaCount: 1
+    revisionHistoryLimit: 3
+    containerPort: 80
+    pullPolicy: IfNotPresent
+    strategy: RollingUpdate
+    envFrom:
+      configMaps: []
+      secrets: []
+    resources: {}
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 80
+      targetPort: 80
 configMaps:
   axric-backend-config:
     enabled: true
