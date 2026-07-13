@@ -119,7 +119,7 @@ configMaps:
       KAFKA_GROUP_ID: axric-group
       KAFKA_CHAT_TOPIC: chat-topic
   rekakim:
-    rekakim-backend-secret:
+    rekakim-backend-config:
       enabled: true
       data:
         NODE_ENV: "production"
