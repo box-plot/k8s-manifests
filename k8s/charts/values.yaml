@@ -56,6 +56,10 @@ apps:
             pathType: Prefix
             serviceName: axric-api
             servicePort: 3000
+          - path: /rekakim
+            pathType: Prefix
+            serviceName: rekakim-app
+            servicePort: 80
           - path: /
             pathType: Prefix
             serviceName: axric-fe
