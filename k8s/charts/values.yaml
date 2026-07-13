@@ -48,6 +48,10 @@ apps:
     hosts:
       - host: axric.co.th
         paths:
+          - path: /api/v1
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
           - path: /api
             pathType: Prefix
             serviceName: axric-api
@@ -87,7 +91,7 @@ apps:
       port: 1080
       targetPort: 1080
     ingress:
-      enabled: true
+      enabled: false
       host: axric.co.th
       path: /api/v1
       tls: true
