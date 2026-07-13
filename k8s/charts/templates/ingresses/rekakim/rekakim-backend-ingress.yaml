@@ -1,4 +1,4 @@
-{{- if .Values.apps.rekakimBackend.enabled }}
+{{- if and .Values.apps.rekakimBackend.enabled .Values.apps.rekakimBackend.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

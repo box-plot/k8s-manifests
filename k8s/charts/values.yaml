@@ -67,7 +67,7 @@ apps:
   rekakimBackend:
     enabled: true
     name: rekakim-backend
-    namespace: rekakim-backend
+    namespace: axric
     image: jaron197/rekakim-backend:1.0.8
     replicaCount: 1
     revisionHistoryLimit: 3
