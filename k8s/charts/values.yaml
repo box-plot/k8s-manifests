@@ -56,10 +56,6 @@ apps:
             pathType: Prefix
             serviceName: axric-api
             servicePort: 3000
-          - path: /rekakim
-            pathType: Prefix
-            serviceName: rekakim-app
-            servicePort: 80
           - path: /
             pathType: Prefix
             serviceName: axric-fe
@@ -131,6 +127,18 @@ apps:
       type: ClusterIP
       port: 80
       targetPort: 8080
+    ingress:
+      enabled: true
+      className: nginx
+      host: axric.co.th
+      path: /rekakim(/|$)(.*)
+      pathType: ImplementationSpecific
+      servicePort: 80
+      annotations:
+        nginx.ingress.kubernetes.io/use-regex: "true"
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 configMaps:
   axric-backend-config:
     enabled: true

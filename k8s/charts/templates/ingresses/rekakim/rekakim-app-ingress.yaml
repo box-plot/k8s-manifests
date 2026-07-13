@@ -1,0 +1,29 @@
+{{- if and .Values.apps.rekakimApp.enabled .Values.apps.rekakimApp.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.apps.rekakimApp.name }}
+  namespace: {{ include "k8s-export.namespace" . }}
+  labels:
+    {{- include "k8s-export.appLabels" (dict "name" .Values.apps.rekakimApp.name "root" .) | nindent 4 }}
+  {{- with .Values.apps.rekakimApp.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.apps.rekakimApp.ingress.className }}
+  ingressClassName: {{ .Values.apps.rekakimApp.ingress.className }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.apps.rekakimApp.ingress.host }}
+    http:
+      paths:
+      - path: {{ .Values.apps.rekakimApp.ingress.path }}
+        pathType: {{ .Values.apps.rekakimApp.ingress.pathType | default "ImplementationSpecific" }}
+        backend:
+          service:
+            name: {{ .Values.apps.rekakimApp.name }}
+            port:
+              number: {{ .Values.apps.rekakimApp.ingress.servicePort | default 80 }}
+{{- end }}
