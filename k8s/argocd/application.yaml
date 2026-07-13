@@ -7,7 +7,7 @@ spec:
   revisionHistoryLimit: 3
   project: default
   source:
-    repoURL: https://github.com/OWNER/k8s-manifests.git
+    repoURL: https://github.com/box-plot/k8s-manifests.git
     targetRevision: main
     path: k8s/charts
     helm:

@@ -128,14 +128,14 @@ Time: 2026-06-17 14:23:15
 curl -X POST \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token $GITHUB_TOKEN" \
-  https://api.github.com/repos/OWNER/k8s-manifests/dispatches \
+  https://api.github.com/repos/box-plot/k8s-manifests/dispatches \
   -d '{"event_type":"deployment-app","client_payload":{"version":"1.0.4","sourceRepo":"deployment-backend"}}'
 ```
 
 **Using GitHub CLI:**
 
 ```bash
-gh repo dispatch OWNER/k8s-manifests \
+gh repo dispatch box-plot/k8s-manifests \
   --event deployment-app \
   --client-payload "{\"version\":\"1.0.4\",\"sourceRepo\":\"deployment-backend\"}"
 ```
@@ -146,7 +146,7 @@ gh repo dispatch OWNER/k8s-manifests \
 # In app repository workflow
 - name: Trigger k8s-manifests deployment
   run: |
-    gh repo dispatch OWNER/k8s-manifests \
+    gh repo dispatch box-plot/k8s-manifests \
       --event deployment-app \
       --client-payload "{\"version\":\"${{ github.sha }}\",\"sourceRepo\":\"${{ github.repository }}\"}"
   env:
@@ -162,12 +162,12 @@ gh repo dispatch OWNER/k8s-manifests \
 **Workflow not triggered:**
 ```bash
 # Check dispatch was sent
-gh api -X POST repos/OWNER/k8s-manifests/dispatches \
+gh api -X POST repos/box-plot/k8s-manifests/dispatches \
   -f event_type=deployment-app \
   -f client_payload='{"version":"test","sourceRepo":"test-repo"}'
 
 # Check workflow logs
-gh run list --repo OWNER/k8s-manifests --limit 5
+gh run list --repo box-plot/k8s-manifests --limit 5
 gh run view <run-id> --log
 ```
 
@@ -235,7 +235,7 @@ Manual deployment/update to Kubernetes cluster.
 
 ```bash
 # List recent runs
-gh run list --repo OWNER/k8s-manifests --limit 10
+gh run list --repo box-plot/k8s-manifests --limit 10
 
 # View specific run
 gh run view <run-id> --log
@@ -248,10 +248,10 @@ gh run watch <run-id>
 
 ```bash
 # From workflow status badge
-https://github.com/OWNER/k8s-manifests/actions/workflows/gitops-k8s-resources.yml/badge.svg
+https://github.com/box-plot/k8s-manifests/actions/workflows/gitops-k8s-resources.yml/badge.svg
 
 # Current status
-gh api repos/OWNER/k8s-manifests/actions/runs --limit 1
+gh api repos/box-plot/k8s-manifests/actions/runs --limit 1
 ```
 
 ---
@@ -351,7 +351,7 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/OWNER/k8s-manifests/dispatches \
+            https://api.github.com/repos/box-plot/k8s-manifests/dispatches \
             -d "{\"event_type\":\"deployment-app\",\"client_payload\":{\"version\":\"${{ github.ref_name }}\",\"sourceRepo\":\"${{ github.repository }}\"}}"
 ```
 

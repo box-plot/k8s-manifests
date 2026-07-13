@@ -76,7 +76,7 @@ Namespaces:
 # 1. Update repository URL in the application manifest
 # Edit k8s/argocd/application.yaml and set:
 # - metadata.namespace: argocd (your ArgoCD namespace)
-# - spec.source.repoURL: https://github.com/YOUR-ORG/k8s-manifests.git
+# - spec.source.repoURL: https://github.com/box-plot/k8s-manifests.git
 
 # 2. Apply ArgoCD Application
 kubectl apply -f k8s/argocd/application.yaml
@@ -267,7 +267,7 @@ See [.docs/SECRETS.md](.docs/SECRETS.md) for:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/OWNER/k8s-manifests.git
+git clone https://github.com/box-plot/k8s-manifests.git
 cd k8s-manifests
 
 # 2. Validate Helm chart
@@ -428,7 +428,7 @@ helm template test k8s/charts > /tmp/manifest.yaml
 
 ### Report Issues
 1. Check [troubleshooting](README.md#-troubleshooting) section
-2. Search existing [GitHub Issues](https://github.com/OWNER/k8s-manifests/issues)
+2. Search existing [GitHub Issues](https://github.com/box-plot/k8s-manifests/issues)
 3. Create new issue with:
    - Helm/K8s version
    - Error message & pod logs
@@ -436,7 +436,7 @@ helm template test k8s/charts > /tmp/manifest.yaml
 
 ### Contact
 - **DevOps Team:** jaronthongfoo@gmail.com
-- **Repository:** https://github.com/OWNER/k8s-manifests
+- **Repository:** https://github.com/box-plot/k8s-manifests
 
 ---
 

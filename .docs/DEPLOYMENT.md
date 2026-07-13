@@ -68,7 +68,7 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 ```bash
 # Add k8s-manifests repo to ArgoCD
-argocd repo add https://github.com/OWNER/k8s-manifests.git \
+argocd repo add https://github.com/box-plot/k8s-manifests.git \
   --username git-user \
   --password git-token \
   --insecure-skip-server-verification
@@ -568,6 +568,6 @@ kubectl delete job --field-selector status.successful=0 -n axric
 ## 📞 Support & Escalation
 
 **Primary Contact:** jaronthongfoo@gmail.com  
-**Repository:** https://github.com/OWNER/k8s-manifests  
+**Repository:** https://github.com/box-plot/k8s-manifests
 **Documentation:** See [README.md](../README.md)
 
