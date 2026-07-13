@@ -35,6 +35,7 @@ spec:
         {{- range .Values.apps.rekakimBackend.envFrom.secrets }}
         - secretRef:
             name: {{ . }}
+          optional: true
         {{- end }}
         startupProbe:
           exec:
