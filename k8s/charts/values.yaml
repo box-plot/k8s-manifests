@@ -47,8 +47,6 @@ apps:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-      nginx.ingress.kubernetes.io/configuration-snippet: |
-        add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
     hosts:
       - host: axric.co.th
         paths:
@@ -203,8 +201,6 @@ apps:
         nginx.ingress.kubernetes.io/rewrite-target: /$2
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
 configMaps:
   axric-backend-config:
     enabled: true
