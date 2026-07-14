@@ -45,10 +45,72 @@ apps:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     hosts:
       - host: axric.co.th
         paths:
           - path: /api/v1
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /socket.io
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /webhook
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /tiktok
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /facebook
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /messenger
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /shopee
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /lazada
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /instagram
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /telegram
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /wechat
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /whatsapp
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /payments
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /meta
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /marketplace
+            pathType: Prefix
+            serviceName: rekakim-backend
+            servicePort: 1080
+          - path: /health
             pathType: Prefix
             serviceName: rekakim-backend
             servicePort: 1080
