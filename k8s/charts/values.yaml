@@ -112,7 +112,7 @@ apps:
   rekakimApp:
     enabled: true
     name: rekakim-app
-    image: jaron197/rekakim-app:1.0.5
+    image: jaron197/rekakim-app:1.0.6
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 8080
