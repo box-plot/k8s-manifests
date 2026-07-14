@@ -47,6 +47,8 @@ apps:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
     hosts:
       - host: axric.co.th
         paths:
@@ -174,7 +176,7 @@ apps:
   rekakimApp:
     enabled: true
     name: rekakim-app
-    image: jaron197/rekakim-app:1.0.11
+    image: jaron197/rekakim-app:1.0.12
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 8080
@@ -201,6 +203,8 @@ apps:
         nginx.ingress.kubernetes.io/rewrite-target: /$2
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
 configMaps:
   axric-backend-config:
     enabled: true
