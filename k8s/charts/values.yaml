@@ -54,6 +54,10 @@ apps:
             pathType: Prefix
             serviceName: rekakim-backend
             servicePort: 1080
+          - path: /rekakim
+            pathType: Prefix
+            serviceName: axric-fe
+            servicePort: 1080
           - path: /socket.io
             pathType: Prefix
             serviceName: rekakim-backend
