@@ -130,7 +130,7 @@ apps:
     enabled: true
     name: rekakim-backend
     namespace: axric
-    image: jaron197/rekakim-backend:1.0.14
+    image: jaron197/rekakim-backend:1.0.15
     replicaCount: 1
     revisionHistoryLimit: 3
     containerPort: 1080
